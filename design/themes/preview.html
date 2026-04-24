@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="mystic">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Lumina Tarot · 三主题预览</title>
+
+  <link rel="stylesheet" href="./tokens.base.css" />
+  <link rel="stylesheet" href="./theme.mystic.css" />
+  <link rel="stylesheet" href="./theme.minimal.css" />
+  <link rel="stylesheet" href="./theme.nature.css" />
+
+  <style>
+    /* ============ Preview 页面专用布局 ============ */
+    .preview-shell {
+      position: relative;
+      min-height: 100vh;
+      padding: var(--space-xl) var(--space-lg);
+      max-width: 1200px;
+      margin: 0 auto;
+      z-index: var(--z-content);
+    }
+
+    /* 主题切换器 */
+    .theme-switcher {
+      display: flex;
+      gap: var(--space-sm);
+      padding: var(--space-sm);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--fx-card-shadow);
+      margin-bottom: var(--space-xl);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .theme-chip {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--motion-fast) var(--ease-out-quart);
+      font-family: var(--font-body);
+      font-size: var(--font-sm);
+      min-height: var(--touch-min);
+    }
+
+    .theme-chip:hover {
+      border-color: var(--border-strong);
+      background: var(--bg-surface-2);
+    }
+
+    .theme-chip.is-active {
+      border-color: var(--accent-primary);
+      background: var(--bg-surface-2);
+      box-shadow: var(--fx-glow);
+    }
+
+    .theme-chip .swatches {
+      display: flex;
+      gap: 3px;
+    }
+
+    .theme-chip .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    /* Hero 区 */
+    .hero {
+      text-align: center;
+      padding: var(--space-2xl) 0;
+    }
+
+    .hero .logo {
+      font-family: var(--font-display);
+      font-size: var(--font-5xl);
+      letter-spacing: var(--tracking-wider);
+      margin: 0 0 var(--space-md);
+    }
+
+    .hero .tagline {
+      font-size: var(--font-xl);
+      color: var(--text-secondary);
+      margin: 0 0 var(--space-xl);
+      max-width: 42ch;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: var(--leading-relaxed);
+    }
+
+    .hero .cta-row {
+      display: flex;
+      gap: var(--space-md);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Section 标题 */
+    .section {
+      margin-top: var(--space-2xl);
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: var(--font-2xl);
+      margin-bottom: var(--space-lg);
+      text-align: center;
+    }
+
+    /* 面板网格 */
+    .panel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: var(--space-lg);
+    }
+
+    .panel h3 {
+      margin: 0 0 var(--space-sm);
+      font-size: var(--font-lg);
+    }
+
+    .panel p {
+      color: var(--text-secondary);
+      line-height: var(--leading-relaxed);
+      margin: 0;
+      font-size: var(--font-base);
+    }
+
+    /* 卡牌展示 */
+    .card-row {
+      display: flex;
+      gap: var(--space-lg);
+      justify-content: center;
+      flex-wrap: wrap;
+      padding: var(--space-xl) 0;
+    }
+
+    .tarot-card {
+      width: var(--card-w-lg);
+      height: var(--card-h-lg);
+    }
+
+    /* 翻开的牌面 */
+    .card-face {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-lg) var(--space-md);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-card);
+      text-align: center;
+    }
+
+    .card-face .roman {
+      font-family: var(--font-display);
+      font-size: var(--font-xl);
+      letter-spacing: var(--tracking-wider);
+      color: var(--accent-primary);
+    }
+
+    .card-face .symbol {
+      font-family: var(--font-decorative);
+      font-size: var(--font-5xl);
+      color: var(--accent-highlight);
+      line-height: 1;
+    }
+
+    .card-face .name {
+      font-family: var(--font-display);
+      font-size: var(--font-base);
+      letter-spacing: var(--tracking-wide);
+    }
+
+    /* 按钮行 */
+    .btn-row {
+      display: flex;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: var(--space-xl) 0;
+    }
+
+    /* Token 展示表 */
+    .token-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: var(--space-md);
+    }
+
+    .token-chip {
+      padding: var(--space-md);
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      font-family: var(--font-code);
+      font-size: var(--font-xs);
+      color: var(--text-secondary);
+    }
+
+    .token-chip .swatch-bar {
+      width: 100%;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--space-sm);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .token-chip .name {
+      display: block;
+      color: var(--text-primary);
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    /* Toast */
+    .toast-demo {
+      display: flex;
+      justify-content: center;
+      margin: var(--space-xl) 0;
+    }
+
+    /* Typography */
+    .typography-demo h1,
+    .typography-demo h2,
+    .typography-demo h3 {
+      margin: 0 0 var(--space-sm);
+    }
+
+    .typography-demo .lead {
+      font-size: var(--font-lg);
+      color: var(--text-secondary);
+      line-height: var(--leading-relaxed);
+      margin: 0 0 var(--space-md);
+    }
+
+    /* 移动端调整 */
+    @media (max-width: 640px) {
+      .hero .logo {
+        font-size: var(--font-4xl);
+      }
+      .hero .tagline {
+        font-size: var(--font-base);
+      }
+      .tarot-card {
+        width: var(--card-w-md);
+        height: var(--card-h-md);
+      }
+    }
+
+    /* footer */
+    .preview-footer {
+      margin-top: var(--space-2xl);
+      padding: var(--space-xl) 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: var(--font-sm);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    /* View Transitions */
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 400ms;
+    }
+  </style>
+</head>
+<body>
+  <!-- 背景层：所有主题都挂上，CSS 会按 data-theme 自动生效 -->
+  <div class="bg-starfield"></div>
+  <div class="bg-halo"></div>
+  <div class="bg-grain"></div>
+  <div class="bg-sunspots"></div>
+  <div class="bg-concentric"></div>
+
+  <div class="preview-shell">
+    <!-- ============ 主题切换器 ============ -->
+    <nav class="theme-switcher" role="tablist" aria-label="主题选择">
+      <button class="theme-chip is-active" data-theme-id="mystic" role="tab">
+        <span class="swatches">
+          <span class="swatch" style="background:#0b0d1a"></span>
+          <span class="swatch" style="background:#c9a961"></span>
+          <span class="swatch" style="background:#7b5ea8"></span>
+        </span>
+        <span>神秘暗黑</span>
+      </button>
+      <button class="theme-chip" data-theme-id="minimal" role="tab">
+        <span class="swatches">
+          <span class="swatch" style="background:#faf8f4"></span>
+          <span class="swatch" style="background:#b8a896"></span>
+          <span class="swatch" style="background:#c3b1d4"></span>
+        </span>
+        <span>现代极简</span>
+      </button>
+      <button class="theme-chip" data-theme-id="nature" role="tab">
+        <span class="swatches">
+          <span class="swatch" style="background:#f4ecd8"></span>
+          <span class="swatch" style="background:#b56b4a"></span>
+          <span class="swatch" style="background:#7a8c6a"></span>
+        </span>
+        <span>疗愈自然</span>
+      </button>
+    </nav>
+
+    <!-- ============ Hero ============ -->
+    <section class="hero">
+      <h1 class="logo">LUMINA TAROT</h1>
+      <p class="tagline">
+        在无声的黑夜中，点亮一束属于你的光。<br/>
+        抽取一张牌，倾听此刻内心最真实的回声。
+      </p>
+      <div class="cta-row">
+        <button class="btn-primary">开始占卜</button>
+        <button class="btn-ghost">浏览牌库</button>
+      </div>
+    </section>
+
+    <div class="divider-ornament"></div>
+
+    <!-- ============ Typography ============ -->
+    <section class="section typography-demo">
+      <h2 class="section-title">排版 · Typography</h2>
+      <div class="panel" style="max-width: 640px; margin: 0 auto;">
+        <h1 style="font-size: var(--font-4xl);">今日之问</h1>
+        <h2 style="font-size: var(--font-2xl);">The Present Whisper</h2>
+        <p class="lead">
+          塔罗并非预言，而是一面镜子。
+          你所抽到的每一张牌，都映照出你此刻内心最为真实的侧影。
+        </p>
+        <p style="color: var(--text-muted); font-size: var(--font-sm);">
+          — 基础字号 16px / 行高 1.5 / 正文使用主题 body font
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ 面板 ============ -->
+    <section class="section">
+      <h2 class="section-title">面板 · Panels</h2>
+      <div class="panel-grid">
+        <div class="panel">
+          <h3>牌阵 · 三牌时间线</h3>
+          <p>过去、现在、未来。三张牌诉说一段旅程，用最经典的结构倾听时间的声音。</p>
+        </div>
+        <div class="panel">
+          <h3>牌阵 · 凯尔特十字</h3>
+          <p>十张牌解析此刻的整体状况，包括潜在影响与最终结果。适合重大抉择。</p>
+        </div>
+        <div class="panel">
+          <h3>牌阵 · 每日一牌</h3>
+          <p>轻盈的开始。一张牌，一段提示，陪伴你开启崭新的一天。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 卡牌 ============ -->
+    <section class="section">
+      <h2 class="section-title">卡牌 · Cards</h2>
+      <div class="card-row">
+        <div class="tarot-card tarot-card-back" aria-label="牌背 1"></div>
+        <div class="tarot-card tarot-card-back" aria-label="牌背 2"></div>
+        <div class="tarot-card card-face" aria-label="愚者">
+          <span class="roman">0</span>
+          <span class="symbol">✦</span>
+          <span class="name">THE FOOL · 愚者</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 按钮 ============ -->
+    <section class="section">
+      <h2 class="section-title">按钮 · Buttons</h2>
+      <div class="btn-row">
+        <button class="btn-primary">主按钮</button>
+        <button class="btn-ghost">次按钮</button>
+        <button class="btn-primary" disabled style="opacity:0.5;cursor:not-allowed;">禁用</button>
+      </div>
+    </section>
+
+    <!-- ============ Toast ============ -->
+    <section class="section">
+      <h2 class="section-title">Toast · 提示</h2>
+      <div class="toast-demo">
+        <div class="toast">✓ 牌阵已保存到历史记录</div>
+      </div>
+    </section>
+
+    <!-- ============ Tokens ============ -->
+    <section class="section">
+      <h2 class="section-title">设计 Token · Design Tokens</h2>
+      <div class="token-grid" id="tokenGrid">
+      </div>
+    </section>
+
+    <div class="divider-ornament"></div>
+
+    <footer class="preview-footer">
+      <p>Lumina Tarot · 三主题预览</p>
+      <p style="margin-top: var(--space-sm); font-size: var(--font-xs);">
+        切换主题体验差异 · 按 T 键快速循环 · 详见 ../design 目录
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const THEMES = ['mystic', 'minimal', 'nature'];
+      const chips = document.querySelectorAll('.theme-chip');
+
+      function hasViewTransition() {
+        return typeof document.startViewTransition === 'function';
+      }
+
+      function applyTheme(id) {
+        const doSet = () => {
+          document.documentElement.dataset.theme = id;
+          chips.forEach((c) => {
+            c.classList.toggle('is-active', c.dataset.themeId === id);
+          });
+          try { localStorage.setItem('lumina-theme', id); } catch (e) {}
+          renderTokenGrid();
+        };
+
+        if (hasViewTransition()) {
+          document.startViewTransition(doSet);
+        } else {
+          doSet();
+        }
+      }
+
+      chips.forEach((c) => {
+        c.addEventListener('click', () => applyTheme(c.dataset.themeId));
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 't' || e.key === 'T') {
+          const cur = document.documentElement.dataset.theme;
+          const idx = THEMES.indexOf(cur);
+          applyTheme(THEMES[(idx + 1) % THEMES.length]);
+        }
+      });
+
+      // 初始：读取 localStorage 或用默认
+      try {
+        const saved = localStorage.getItem('lumina-theme');
+        if (THEMES.includes(saved)) applyTheme(saved);
+        else applyTheme('mystic');
+      } catch (e) {
+        applyTheme('mystic');
+      }
+
+      // 渲染 token 预览
+      const TOKEN_LIST = [
+        '--bg-base',
+        '--bg-surface',
+        '--accent-primary',
+        '--accent-highlight',
+        '--accent-secondary',
+        '--text-primary',
+        '--text-secondary',
+        '--border-subtle',
+      ];
+
+      function renderTokenGrid() {
+        const grid = document.getElementById('tokenGrid');
+        if (!grid) return;
+        const cs = getComputedStyle(document.documentElement);
+        grid.innerHTML = TOKEN_LIST.map((name) => {
+          const val = cs.getPropertyValue(name).trim();
+          return `
+            <div class="token-chip">
+              <div class="swatch-bar" style="background:${val}"></div>
+              <span class="name">${name}</span>
+              <span>${val || '—'}</span>
+            </div>
+          `;
+        }).join('');
+      }
+    })();
+  </script>
+</body>
+</html>

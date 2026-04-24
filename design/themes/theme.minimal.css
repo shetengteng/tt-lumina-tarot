@@ -1,0 +1,300 @@
+/* ============================================================
+ * Lumina Tarot · 主题 B · 现代极简 (Modern Minimalist)
+ * ------------------------------------------------------------
+ * 清新 · 疗愈 · 留白 · 无压力
+ * 参考：Felis.AI / Arcanes
+ * 作用域：html[data-theme="minimal"]
+ * ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+:root[data-theme='minimal'] {
+  /* =========================================================
+   * 1 · 色彩 Token（语义化）
+   * ========================================================= */
+
+  /* 背景层 */
+  --bg-base: #faf8f4;          /* 奶油白 */
+  --bg-surface: #ffffff;       /* 纯白 */
+  --bg-surface-2: #f5f1ea;     /* 米色 */
+  --bg-overlay: rgba(255, 255, 255, 0.85);
+  --bg-glass: rgba(255, 255, 255, 0.7);
+
+  /* 强调色 */
+  --accent-primary: #b8a896;      /* 沙色 */
+  --accent-primary-dim: #d5c9b5;
+  --accent-highlight: #a8b9ca;    /* 雾霾蓝 */
+  --accent-secondary: #c3b1d4;    /* 淡紫 */
+  --accent-danger: #d9848a;       /* 柔和红 */
+  --accent-star: #e8d9bf;         /* 极淡金 */
+
+  /* 文字层 */
+  --text-primary: #2a2a2a;        /* 深灰近黑 */
+  --text-secondary: #5a5a5a;
+  --text-muted: #9a9a9a;
+  --text-inverse: #ffffff;
+
+  /* 边框/分隔线 */
+  --border-subtle: rgba(42, 42, 42, 0.08);
+  --border-strong: rgba(42, 42, 42, 0.18);
+  --border-focus: var(--accent-highlight);
+
+  /* =========================================================
+   * 2 · 字体
+   * ========================================================= */
+
+  --font-display: 'Poppins', 'Inter', 'PingFang SC', system-ui, sans-serif;
+  --font-body: 'Inter', 'PingFang SC', 'Helvetica Neue', system-ui, sans-serif;
+  --font-decorative: 'Poppins', sans-serif;
+  --font-code: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* =========================================================
+   * 3 · 圆角（偏圆润，但不夸张）
+   * ========================================================= */
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-card: 14px;
+  --radius-button: 10px;
+  --radius-panel: 16px;
+
+  /* =========================================================
+   * 4 · 光效与阴影（极度克制）
+   * ========================================================= */
+
+  --fx-glow: 0 0 0 1px rgba(168, 185, 202, 0.3);
+  --fx-glow-strong: 0 4px 20px rgba(168, 185, 202, 0.25);
+  --fx-glass: 0 1px 3px rgba(0, 0, 0, 0.04),
+              0 4px 12px rgba(0, 0, 0, 0.04);
+  --fx-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.04),
+                    0 12px 32px rgba(0, 0, 0, 0.06);
+  --fx-text-shadow: none;
+
+  /* 玻璃拟态（几乎不模糊） */
+  --glass-blur: 4px;
+  --glass-saturate: 110%;
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(42, 42, 42, 0.06);
+}
+
+/* ============================================================
+ * 主题作用域：全局基础样式
+ * ============================================================ */
+
+html[data-theme='minimal'] body {
+  background: var(--bg-base);
+  background-image:
+    radial-gradient(ellipse at top, rgba(195, 177, 212, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at bottom right, rgba(168, 185, 202, 0.06) 0%, transparent 50%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-weight: 400;
+}
+
+html[data-theme='minimal'] h1,
+html[data-theme='minimal'] h2,
+html[data-theme='minimal'] h3,
+html[data-theme='minimal'] h4,
+html[data-theme='minimal'] h5,
+html[data-theme='minimal'] h6 {
+  font-family: var(--font-display);
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+html[data-theme='minimal'] h1 {
+  font-weight: 700;
+  font-size: var(--font-4xl);
+  line-height: var(--leading-tight);
+}
+
+html[data-theme='minimal'] ::selection {
+  background: rgba(195, 177, 212, 0.4);
+  color: var(--text-primary);
+}
+
+/* Grain noise 背景纹理（极轻微） */
+html[data-theme='minimal'] .bg-grain {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-bg);
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* ============================================================
+ * 组件：面板（纯白卡片）
+ * ============================================================ */
+
+html[data-theme='minimal'] .panel,
+html[data-theme='minimal'] .base-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--fx-card-shadow);
+  padding: var(--space-xl);
+  color: var(--text-primary);
+}
+
+/* ============================================================
+ * 组件：按钮
+ * ============================================================ */
+
+html[data-theme='minimal'] .btn-primary {
+  background: var(--text-primary);
+  color: var(--text-inverse);
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: var(--tracking-normal);
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-button);
+  border: none;
+  transition: all var(--motion-fast) var(--ease-out-quart);
+  min-height: var(--touch-min);
+}
+
+html[data-theme='minimal'] .btn-primary:hover {
+  background: #000;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+html[data-theme='minimal'] .btn-primary:active {
+  transform: translateY(0);
+}
+
+html[data-theme='minimal'] .btn-ghost {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-button);
+  padding: var(--space-md) var(--space-xl);
+  font-family: var(--font-display);
+  font-weight: 500;
+  transition: all var(--motion-fast) var(--ease-out-quart);
+  min-height: var(--touch-min);
+}
+
+html[data-theme='minimal'] .btn-ghost:hover {
+  background: var(--bg-surface-2);
+  border-color: var(--text-primary);
+}
+
+/* ============================================================
+ * 组件：卡牌
+ * ============================================================ */
+
+html[data-theme='minimal'] .tarot-card {
+  border-radius: var(--radius-card);
+  box-shadow: var(--fx-card-shadow);
+  transition: transform var(--motion-base) var(--ease-out-quart),
+              box-shadow var(--motion-base) var(--ease-out-quart);
+}
+
+html[data-theme='minimal'] .tarot-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08),
+              0 16px 48px rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme='minimal'] .tarot-card-back {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 极简牌背：居中圆形 LOGO */
+html[data-theme='minimal'] .tarot-card-back::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40%;
+  aspect-ratio: 1;
+  border: 1.5px solid var(--text-primary);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+html[data-theme='minimal'] .tarot-card-back::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  aspect-ratio: 1;
+  background: var(--text-primary);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+/* ============================================================
+ * 装饰线（极简线条）
+ * ============================================================ */
+
+html[data-theme='minimal'] .divider-ornament {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: var(--space-xl) 0;
+}
+
+/* ============================================================
+ * Toast 提示
+ * ============================================================ */
+
+html[data-theme='minimal'] .toast {
+  background: var(--text-primary);
+  color: var(--text-inverse);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  font-family: var(--font-body);
+  font-weight: 500;
+}
+
+/* ============================================================
+ * 链接
+ * ============================================================ */
+
+html[data-theme='minimal'] a {
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color var(--motion-fast);
+}
+
+html[data-theme='minimal'] a:hover {
+  text-decoration-color: var(--text-primary);
+}
+
+/* ============================================================
+ * 可选装饰：同心圆背景（用于洗牌场景）
+ * ============================================================ */
+
+html[data-theme='minimal'] .bg-concentric {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-bg);
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 50%,
+      transparent 0%,
+      transparent 120px,
+      rgba(195, 177, 212, 0.04) 122px,
+      rgba(195, 177, 212, 0.04) 124px,
+      transparent 125px,
+      transparent 220px,
+      rgba(168, 185, 202, 0.03) 222px,
+      rgba(168, 185, 202, 0.03) 224px,
+      transparent 226px);
+}

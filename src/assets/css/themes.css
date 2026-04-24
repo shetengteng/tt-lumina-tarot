@@ -1,0 +1,132 @@
+/* ==========================================================================
+   Lumina Tarot · 主题 Tokens（shadcn-vue HSL 变量）
+   - 变量命名与 shadcn-vue 完全对齐
+   - 三套主题：mystic / minimal / nature
+   - 额外的 font / ring-offset 变量为项目扩展
+   ========================================================================== */
+
+:root {
+  --font-display: 'Cinzel', 'Cormorant Garamond', serif;
+  --font-body: 'Cormorant Garamond', Georgia, serif;
+  --font-decorative: 'Cinzel', serif;
+
+  --ring-offset: 2px;
+}
+
+/* --------------------------- 神秘暗黑 Mystic -------------------------- */
+:root,
+html[data-theme='mystic'] {
+  color-scheme: dark;
+
+  --background: 230 30% 7%;
+  --foreground: 43 60% 90%;
+
+  --card: 229 35% 12%;
+  --card-foreground: 43 60% 90%;
+
+  --popover: 229 35% 12%;
+  --popover-foreground: 43 60% 90%;
+
+  --primary: 38 47% 58%;
+  --primary-foreground: 230 30% 7%;
+
+  --secondary: 230 45% 19%;
+  --secondary-foreground: 43 60% 90%;
+
+  --muted: 229 28% 16%;
+  --muted-foreground: 43 25% 65%;
+
+  --accent: 43 72% 69%;
+  --accent-foreground: 230 30% 7%;
+
+  --destructive: 353 54% 46%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 38 47% 25%;
+  --input: 38 47% 25%;
+  --ring: 43 72% 69%;
+
+  --radius: 0.25rem;
+
+  --font-display: 'Cinzel', 'Cormorant Garamond', serif;
+  --font-body: 'Cormorant Garamond', Georgia, serif;
+  --font-decorative: 'Cinzel', serif;
+}
+
+/* --------------------------- 现代极简 Minimal ------------------------- */
+html[data-theme='minimal'] {
+  color-scheme: light;
+
+  --background: 42 35% 97%;
+  --foreground: 0 0% 15%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 15%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 15%;
+
+  --primary: 0 0% 15%;
+  --primary-foreground: 42 35% 97%;
+
+  --secondary: 40 20% 92%;
+  --secondary-foreground: 0 0% 15%;
+
+  --muted: 40 15% 94%;
+  --muted-foreground: 0 0% 45%;
+
+  --accent: 210 25% 80%;
+  --accent-foreground: 0 0% 15%;
+
+  --destructive: 0 62% 50%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 40 18% 88%;
+  --input: 40 18% 88%;
+  --ring: 0 0% 15%;
+
+  --radius: 1rem;
+
+  --font-display: 'Inter', 'Poppins', system-ui, sans-serif;
+  --font-body: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-decorative: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+
+/* --------------------------- 疗愈自然 Nature -------------------------- */
+html[data-theme='nature'] {
+  color-scheme: light;
+
+  --background: 37 67% 93%;
+  --foreground: 18 25% 23%;
+
+  --card: 38 48% 89%;
+  --card-foreground: 18 25% 23%;
+
+  --popover: 38 48% 89%;
+  --popover-foreground: 18 25% 23%;
+
+  --primary: 18 42% 45%;
+  --primary-foreground: 37 67% 93%;
+
+  --secondary: 40 40% 82%;
+  --secondary-foreground: 18 25% 23%;
+
+  --muted: 38 30% 85%;
+  --muted-foreground: 18 15% 40%;
+
+  --accent: 30 52% 65%;
+  --accent-foreground: 18 25% 23%;
+
+  --destructive: 0 55% 48%;
+  --destructive-foreground: 37 67% 93%;
+
+  --border: 30 30% 75%;
+  --input: 30 30% 78%;
+  --ring: 18 42% 45%;
+
+  --radius: 1.5rem;
+
+  --font-display: 'Fraunces', 'Cormorant Garamond', serif;
+  --font-body: 'Fraunces', Georgia, serif;
+  --font-decorative: 'Caveat', 'Fraunces', cursive;
+}

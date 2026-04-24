@@ -1,0 +1,260 @@
+<script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { Button } from '@/components/ui/button';
+import { useReadingStore } from '@/stores/reading';
+import { getSpreadById } from '@/data/spreads';
+import { drawCards } from '@/lib/tarot';
+import { sleep } from '@/lib/utils';
+import { useSettingsStore } from '@/stores/settings';
+
+const HOLD_DURATION_MS = 3000;
+const REVEAL_LATENCY_MS = 450;
+
+const router = useRouter();
+const readingStore = useReadingStore();
+const settings = useSettingsStore();
+
+type Phase = 'idle' | 'holding' | 'drawing' | 'done';
+const phase = ref<Phase>('idle');
+const progress = ref(0);
+
+const spread = computed(() =>
+  readingStore.current?.spreadId ? getSpreadById(readingStore.current.spreadId) : null
+);
+
+let rafId: number | null = null;
+let holdStart = 0;
+let holdAccumulated = 0;
+
+onMounted(() => {
+  if (!readingStore.current || !readingStore.current.question) {
+    router.replace({ name: 'spread' });
+  }
+});
+
+onBeforeUnmount(() => {
+  stopLoop();
+});
+
+function tick(now: number) {
+  if (phase.value !== 'holding') return;
+  const elapsed = now - holdStart + holdAccumulated;
+  const pct = Math.min(100, (elapsed / HOLD_DURATION_MS) * 100);
+  progress.value = pct;
+  if (pct >= 100) {
+    finishHold();
+    return;
+  }
+  rafId = requestAnimationFrame(tick);
+}
+
+function startHold(e?: Event) {
+  if (phase.value !== 'idle') return;
+  e?.preventDefault();
+  phase.value = 'holding';
+  holdStart = performance.now();
+  rafId = requestAnimationFrame(tick);
+}
+
+function cancelHold() {
+  if (phase.value !== 'holding') return;
+  stopLoop();
+  holdAccumulated = 0;
+  progress.value = 0;
+  phase.value = 'idle';
+}
+
+function stopLoop() {
+  if (rafId !== null) {
+    cancelAnimationFrame(rafId);
+    rafId = null;
+  }
+}
+
+async function finishHold() {
+  stopLoop();
+  if (!spread.value || !readingStore.current) {
+    cancelHold();
+    return;
+  }
+  phase.value = 'drawing';
+  progress.value = 100;
+  await sleep(REVEAL_LATENCY_MS);
+  const cards = drawCards(spread.value);
+  readingStore.setDrawnCards(cards);
+  phase.value = 'done';
+  await sleep(REVEAL_LATENCY_MS);
+  router.push({ name: 'reveal' });
+}
+
+function onKeyDown(e: KeyboardEvent) {
+  if (e.repeat) return;
+  if (e.key === 'Enter' || e.key === ' ') {
+    startHold(e);
+  }
+}
+
+function onKeyUp(e: KeyboardEvent) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    cancelHold();
+  }
+}
+
+const hintText = computed(() => {
+  switch (phase.value) {
+    case 'idle':
+      return '长按此处 3 秒 开始洗牌';
+    case 'holding':
+      return progress.value >= 99 ? '洗牌完成 · 抽牌中…' : '保持专注，继续按住…';
+    case 'drawing':
+      return '牌灵已聆听你的问题…';
+    case 'done':
+      return '抽牌完毕，即将翻开';
+  }
+  return '';
+});
+
+const progressLabel = computed(() => {
+  if (phase.value === 'idle') return '已洗：0% · 松手将重置';
+  if (phase.value === 'drawing' || phase.value === 'done') return '已洗：100% · 准备就绪';
+  return `已洗：${Math.floor(progress.value)}% · 请保持专注`;
+});
+
+const isShuffling = computed(
+  () => !settings.reducedMotion && (phase.value === 'holding' || phase.value === 'drawing')
+);
+</script>
+
+<template>
+  <section class="mx-auto w-full max-w-3xl px-md pt-2xl pb-2xl">
+    <header class="mb-xl text-center">
+      <div class="text-xs uppercase tracking-[0.4em] text-primary">Step 3 / 4</div>
+      <h1 class="mt-sm font-display text-3xl tracking-wide md:text-4xl">长按屏幕开始洗牌</h1>
+      <p class="mt-sm text-sm text-muted-foreground">
+        深呼吸，将问题默念三次，把注意力交给此刻。
+      </p>
+    </header>
+
+    <div
+      v-if="readingStore.current?.question"
+      class="mx-auto mb-xl max-w-xl rounded-md border border-border/60 bg-muted/40 p-md text-center text-sm text-muted-foreground"
+    >
+      <span class="text-primary">「</span>
+      {{ readingStore.current.question }}
+      <span class="text-primary">」</span>
+    </div>
+
+    <!-- 长按触控区：牌堆扇形 -->
+    <div class="mb-xl flex justify-center">
+      <div
+        role="button"
+        tabindex="0"
+        :aria-pressed="phase === 'holding'"
+        :aria-label="phase === 'idle' ? '长按此处 3 秒开始洗牌' : '正在洗牌'"
+        class="relative flex h-[260px] w-[220px] cursor-pointer select-none items-center justify-center outline-none touch-none md:h-[320px] md:w-[240px]"
+        :class="phase !== 'idle' && 'pointer-events-none'"
+        @pointerdown="startHold"
+        @pointerup="cancelHold"
+        @pointerleave="cancelHold"
+        @pointercancel="cancelHold"
+        @contextmenu.prevent
+        @keydown="onKeyDown"
+        @keyup="onKeyUp"
+        @blur="cancelHold"
+      >
+        <div
+          v-for="i in 5"
+          :key="i"
+          class="card-back shuffle-card absolute left-1/2 top-1/2 h-[220px] w-[150px] -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-lg md:h-[260px] md:w-[170px]"
+          :class="isShuffling && 'is-shuffling'"
+          :style="{ '--i': i }"
+        />
+      </div>
+    </div>
+
+    <!-- 长按指示圈 -->
+    <div class="mb-lg flex items-center justify-center gap-md">
+      <div
+        class="relative flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary/40 md:h-14 md:w-14"
+        :class="phase === 'idle' && !settings.reducedMotion && 'animate-pulse'"
+      >
+        <span
+          aria-hidden="true"
+          class="h-3 w-3 rounded-full bg-primary transition-transform md:h-4 md:w-4"
+          :class="phase === 'holding' ? 'scale-125' : 'scale-100'"
+        />
+      </div>
+      <p class="text-sm text-muted-foreground">
+        {{ hintText }}
+      </p>
+    </div>
+
+    <!-- 进度条 -->
+    <div class="mx-auto mb-lg max-w-[320px]">
+      <div class="h-1 w-full overflow-hidden rounded-full bg-muted">
+        <div
+          class="h-full rounded-full bg-primary transition-[width] duration-75 ease-out"
+          :style="{ width: `${progress}%` }"
+        />
+      </div>
+      <p class="mt-sm text-center text-xs text-muted-foreground">
+        {{ progressLabel }}
+      </p>
+    </div>
+
+    <!-- 键盘 / 无法长按时的备用按钮 -->
+    <div class="text-center">
+      <Button
+        v-if="phase === 'idle'"
+        variant="ghost"
+        size="sm"
+        class="text-xs text-muted-foreground"
+        @click="finishHold"
+      >
+        不方便长按？点此直接洗牌
+      </Button>
+    </div>
+  </section>
+</template>
+
+<style scoped>
+.shuffle-card {
+  transform-origin: 50% 50%;
+  transition: transform 600ms ease;
+  transform: translate(-50%, -50%)
+    rotate(calc((var(--i) - 3) * 5deg))
+    translateY(calc((var(--i) - 3) * -3px));
+}
+.shuffle-card.is-shuffling {
+  animation: shuffle-dance 1.8s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 80ms);
+}
+@keyframes shuffle-dance {
+  0% {
+    transform: translate(-50%, -50%)
+      rotate(calc((var(--i) - 3) * 5deg))
+      translateY(calc((var(--i) - 3) * -3px));
+  }
+  25% {
+    transform: translate(calc(-50% + 38px), -60%)
+      rotate(calc((var(--i) - 3) * 16deg))
+      translateY(-14px);
+  }
+  50% {
+    transform: translate(calc(-50% - 40px), -40%)
+      rotate(calc((var(--i) - 3) * -14deg))
+      translateY(-4px);
+  }
+  75% {
+    transform: translate(calc(-50% + 18px), -52%)
+      rotate(calc((var(--i) - 3) * 8deg))
+      translateY(-10px);
+  }
+  100% {
+    transform: translate(-50%, -50%)
+      rotate(calc((var(--i) - 3) * 5deg))
+      translateY(calc((var(--i) - 3) * -3px));
+  }
+}
+</style>

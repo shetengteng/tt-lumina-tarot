@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="mystic">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0d1a" />
+    <meta name="description" content="Lumina Tarot · 离线塔罗牌占卜 · 在黑暗中点亮内心微光" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <title>Lumina Tarot · 在黑暗中点亮微光</title>
+
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('lumina-theme');
+          var m = (location.search || '').match(/[?&]t=(mystic|minimal|nature)/);
+          if (m) {
+            t = m[1];
+            try { localStorage.setItem('lumina-theme', t); } catch (e) {}
+          }
+          if (t === 'mystic' || t === 'minimal' || t === 'nature') {
+            document.documentElement.dataset.theme = t;
+            document.querySelector('meta[name="theme-color"]').setAttribute(
+              'content',
+              t === 'mystic' ? '#0b0d1a' : t === 'minimal' ? '#faf8f4' : '#f4ecd8'
+            );
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Caveat:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap"
+    />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

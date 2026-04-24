@@ -1,0 +1,1490 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="mystic">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Lumina Tarot · HTML 原型（Tailwind + shadcn-vue 风格）</title>
+
+  <!-- Google Fonts：三主题用字 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Caveat:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" />
+
+  <!-- Tailwind CDN（原型用，实装会本地构建） -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          spacing: {
+            xs: '4px',
+            sm: '8px',
+            md: '16px',
+            lg: '24px',
+            xl: '48px',
+            '2xl': '96px',
+          },
+          fontFamily: {
+            display: ['var(--font-display)'],
+            body: ['var(--font-body)'],
+            deco: ['var(--font-decorative)'],
+          },
+          colors: {
+            border: 'hsl(var(--border))',
+            input: 'hsl(var(--input))',
+            ring: 'hsl(var(--ring))',
+            background: 'hsl(var(--background))',
+            foreground: 'hsl(var(--foreground))',
+            primary: {
+              DEFAULT: 'hsl(var(--primary))',
+              foreground: 'hsl(var(--primary-foreground))',
+            },
+            secondary: {
+              DEFAULT: 'hsl(var(--secondary))',
+              foreground: 'hsl(var(--secondary-foreground))',
+            },
+            muted: {
+              DEFAULT: 'hsl(var(--muted))',
+              foreground: 'hsl(var(--muted-foreground))',
+            },
+            accent: {
+              DEFAULT: 'hsl(var(--accent))',
+              foreground: 'hsl(var(--accent-foreground))',
+            },
+            destructive: {
+              DEFAULT: 'hsl(var(--destructive))',
+              foreground: 'hsl(var(--destructive-foreground))',
+            },
+            card: {
+              DEFAULT: 'hsl(var(--card))',
+              foreground: 'hsl(var(--card-foreground))',
+            },
+            popover: {
+              DEFAULT: 'hsl(var(--popover))',
+              foreground: 'hsl(var(--popover-foreground))',
+            },
+          },
+          borderRadius: {
+            lg: 'var(--radius)',
+            md: 'calc(var(--radius) - 2px)',
+            sm: 'calc(var(--radius) - 4px)',
+          },
+          keyframes: {
+            twinkle: {
+              '0%,100%': { opacity: '0.4' },
+              '50%': { opacity: '0.95' },
+            },
+            rotate360: {
+              from: { transform: 'translate(-50%,-50%) rotate(0)' },
+              to: { transform: 'translate(-50%,-50%) rotate(360deg)' },
+            },
+            floatSlow: {
+              '0%,100%': { transform: 'translate(0,0) scale(1)' },
+              '50%': { transform: 'translate(4vw,-3vh) scale(1.05)' },
+            },
+            cardFloat: {
+              '0%,100%': { transform: 'translateY(0) rotate(-1deg)' },
+              '50%': { transform: 'translateY(-6px) rotate(1deg)' },
+            },
+            fadeIn: {
+              from: { opacity: '0', transform: 'translateY(10px)' },
+              to: { opacity: '1', transform: 'translateY(0)' },
+            },
+          },
+          animation: {
+            twinkle: 'twinkle 4s ease-in-out infinite alternate',
+            rotate360: 'rotate360 120s linear infinite',
+            floatSlow: 'floatSlow 22s ease-in-out infinite',
+            cardFloat: 'cardFloat 8s ease-in-out infinite',
+            fadeIn: 'fadeIn 0.6s ease-out backwards',
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- 三主题 CSS 变量 + 背景效果 -->
+  <style>
+    /* ============ 主题 A · 神秘暗黑 ============ */
+    :root[data-theme='mystic'] {
+      --background: 230 30% 7%;
+      --foreground: 43 60% 90%;
+      --card: 229 35% 12%;
+      --card-foreground: 43 60% 90%;
+      --popover: 229 35% 15%;
+      --popover-foreground: 43 60% 90%;
+      --primary: 38 47% 58%;
+      --primary-foreground: 230 30% 7%;
+      --secondary: 230 45% 19%;
+      --secondary-foreground: 43 60% 90%;
+      --muted: 230 20% 18%;
+      --muted-foreground: 43 22% 62%;
+      --accent: 43 72% 69%;
+      --accent-foreground: 230 30% 7%;
+      --destructive: 353 54% 46%;
+      --destructive-foreground: 0 0% 98%;
+      --border: 38 47% 25%;
+      --input: 38 47% 25%;
+      --ring: 43 72% 69%;
+      --radius: 0.25rem;
+      --font-display: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'Cormorant Garamond', 'Noto Serif SC', Georgia, serif;
+      --font-decorative: 'Cinzel', serif;
+      color-scheme: dark;
+    }
+
+    :root[data-theme='mystic'] body {
+      background:
+        radial-gradient(ellipse at 20% 0%, hsl(270 38% 35% / 0.22) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 100%, hsl(38 47% 58% / 0.12) 0%, transparent 55%),
+        hsl(var(--background));
+      background-attachment: fixed;
+    }
+
+    /* ============ 主题 B · 现代极简 ============ */
+    :root[data-theme='minimal'] {
+      --background: 42 40% 97%;
+      --foreground: 0 0% 16%;
+      --card: 0 0% 100%;
+      --card-foreground: 0 0% 16%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 0 0% 16%;
+      --primary: 0 0% 16%;
+      --primary-foreground: 0 0% 100%;
+      --secondary: 30 22% 66%;
+      --secondary-foreground: 0 0% 16%;
+      --muted: 35 28% 93%;
+      --muted-foreground: 0 0% 38%;
+      --accent: 210 23% 72%;
+      --accent-foreground: 0 0% 16%;
+      --destructive: 354 50% 64%;
+      --destructive-foreground: 0 0% 98%;
+      --border: 35 15% 88%;
+      --input: 35 15% 88%;
+      --ring: 210 23% 50%;
+      --radius: 0.75rem;
+      --font-display: 'Poppins', 'Inter', system-ui, sans-serif;
+      --font-body: 'Inter', 'PingFang SC', system-ui, sans-serif;
+      --font-decorative: 'Poppins', sans-serif;
+      color-scheme: light;
+    }
+
+    :root[data-theme='minimal'] body {
+      background:
+        radial-gradient(ellipse at top, hsl(260 35% 80% / 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse at bottom right, hsl(210 23% 72% / 0.10) 0%, transparent 55%),
+        hsl(var(--background));
+      background-attachment: fixed;
+    }
+
+    /* ============ 主题 C · 疗愈自然 ============ */
+    :root[data-theme='nature'] {
+      --background: 40 56% 89%;
+      --foreground: 18 25% 19%;
+      --card: 37 67% 93%;
+      --card-foreground: 18 25% 19%;
+      --popover: 37 67% 93%;
+      --popover-foreground: 18 25% 19%;
+      --primary: 18 42% 50%;
+      --primary-foreground: 37 67% 93%;
+      --secondary: 90 15% 48%;
+      --secondary-foreground: 37 67% 93%;
+      --muted: 38 55% 84%;
+      --muted-foreground: 18 20% 40%;
+      --accent: 30 52% 65%;
+      --accent-foreground: 18 25% 19%;
+      --destructive: 7 49% 56%;
+      --destructive-foreground: 37 67% 93%;
+      --border: 30 22% 78%;
+      --input: 30 22% 78%;
+      --ring: 18 42% 50%;
+      --radius: 1.25rem;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --font-decorative: 'Caveat', cursive;
+      color-scheme: light;
+    }
+
+    :root[data-theme='nature'] body {
+      background:
+        radial-gradient(ellipse at top left, hsl(30 52% 65% / 0.32) 0%, transparent 55%),
+        radial-gradient(ellipse at bottom right, hsl(90 15% 48% / 0.15) 0%, transparent 55%),
+        linear-gradient(180deg, hsl(var(--background)) 0%, hsl(38 55% 84%) 100%);
+      background-attachment: fixed;
+    }
+
+    /* 基础 */
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      color: hsl(var(--foreground));
+      min-height: 100dvh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* 背景层：星空（mystic）*/
+    .bg-starfield {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      opacity: 0; transition: opacity 0.6s ease;
+      background:
+        radial-gradient(1px 1px at 12% 18%, hsl(43 72% 89%), transparent 100%),
+        radial-gradient(1px 1px at 34% 72%, hsl(43 72% 89%), transparent 100%),
+        radial-gradient(1px 1px at 58% 34%, hsl(43 72% 89%), transparent 100%),
+        radial-gradient(1px 1px at 82% 88%, hsl(43 72% 89%), transparent 100%),
+        radial-gradient(1px 1px at 91% 24%, hsl(43 72% 89%), transparent 100%),
+        radial-gradient(2px 2px at 45% 55%, hsl(43 72% 69%), transparent 100%),
+        radial-gradient(1.5px 1.5px at 22% 42%, hsl(43 72% 89%), transparent 100%);
+      background-size: 600px 600px;
+    }
+    html[data-theme='mystic'] .bg-starfield {
+      opacity: 0.72;
+      animation: twinkle 4s ease-in-out infinite alternate;
+    }
+
+    /* 金色旋转光环（mystic）*/
+    .bg-halo {
+      position: fixed; left: 50%; top: 50%;
+      width: 80vmin; height: 80vmin;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      pointer-events: none; z-index: 0;
+      opacity: 0; transition: opacity 0.6s ease;
+      background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        hsl(38 47% 58% / 0.10) 90deg,
+        transparent 180deg,
+        hsl(270 38% 55% / 0.08) 270deg,
+        transparent 360deg
+      );
+    }
+    html[data-theme='mystic'] .bg-halo {
+      opacity: 1;
+      animation: rotate360 120s linear infinite;
+    }
+
+    /* grain noise（minimal）*/
+    .bg-grain {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      opacity: 0; transition: opacity 0.6s ease;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    html[data-theme='minimal'] .bg-grain { opacity: 0.035; }
+
+    /* 暖色光斑（nature）*/
+    .bg-sun {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+      opacity: 0; transition: opacity 0.6s ease;
+    }
+    html[data-theme='nature'] .bg-sun { opacity: 1; }
+    .bg-sun::before {
+      content: ''; position: absolute;
+      width: 40vmin; height: 40vmin; top: -10%; right: -5%;
+      background: radial-gradient(circle, hsl(30 52% 65% / 0.38) 0%, hsl(30 52% 65% / 0.15) 30%, transparent 60%);
+      border-radius: 50%; filter: blur(20px);
+      animation: floatSlow 20s ease-in-out infinite;
+    }
+    .bg-sun::after {
+      content: ''; position: absolute;
+      width: 30vmin; height: 30vmin; bottom: 10%; left: -5%;
+      background: radial-gradient(circle, hsl(90 15% 48% / 0.22) 0%, transparent 60%);
+      border-radius: 50%; filter: blur(24px);
+      animation: floatSlow 25s ease-in-out infinite reverse;
+    }
+
+    /* 滚动条（主题化）*/
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+
+    /* ============ 牌背：业务只写 .card-back，由主题作用域决定视觉 ============ */
+    .card-back {
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 神秘暗黑 · 牌背 */
+    html[data-theme='mystic'] .card-back {
+      background:
+        radial-gradient(circle at 50% 50%, hsl(38 47% 58% / 0.28) 0%, transparent 60%),
+        linear-gradient(135deg, hsl(229 35% 17%) 0%, hsl(230 30% 7%) 100%);
+      border: 1px solid hsl(38 47% 58%);
+    }
+    html[data-theme='mystic'] .card-back::after {
+      content: ''; position: absolute; inset: 8%;
+      border: 1px solid hsl(38 47% 58% / 0.35);
+      border-radius: 6px;
+      background:
+        radial-gradient(circle at 50% 50%, transparent 40%, hsl(38 47% 58% / 0.15) 42%, transparent 44%),
+        radial-gradient(circle at 50% 50%, transparent 55%, hsl(38 47% 58% / 0.12) 57%, transparent 59%);
+    }
+    html[data-theme='mystic'] .card-back::before {
+      content: '✦'; position: absolute; left: 50%; top: 50%;
+      transform: translate(-50%, -50%); color: hsl(43 72% 69%);
+      font-size: clamp(1.2rem, 2.2vw, 2.2rem); opacity: 0.85;
+      font-family: var(--font-display);
+      z-index: 2;
+    }
+
+    /* 现代极简 · 牌背 */
+    html[data-theme='minimal'] .card-back {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+    }
+    html[data-theme='minimal'] .card-back::after {
+      content: ''; position: absolute; left: 50%; top: 50%;
+      width: 40%; aspect-ratio: 1;
+      border: 1.5px solid hsl(var(--foreground));
+      border-radius: 50%; transform: translate(-50%, -50%);
+    }
+    html[data-theme='minimal'] .card-back::before {
+      content: ''; position: absolute; left: 50%; top: 50%;
+      width: 6px; aspect-ratio: 1;
+      background: hsl(var(--foreground));
+      border-radius: 50%; transform: translate(-50%, -50%);
+      z-index: 1;
+    }
+
+    /* 疗愈自然 · 牌背 */
+    html[data-theme='nature'] .card-back {
+      background:
+        radial-gradient(circle at 50% 40%, hsl(30 52% 65% / 0.4) 0%, transparent 60%),
+        linear-gradient(135deg, hsl(30 42% 55%) 0%, hsl(18 42% 35%) 100%);
+      border: 1px solid hsl(38 47% 58% / 0.5);
+    }
+    html[data-theme='nature'] .card-back::after {
+      content: ''; position: absolute; inset: 12%;
+      border: 1px dashed hsl(37 67% 93% / 0.4);
+      border-radius: 12px;
+      background: radial-gradient(circle at 50% 50%, hsl(37 67% 93% / 0.25) 0%, transparent 45%);
+    }
+    html[data-theme='nature'] .card-back::before {
+      content: '❋'; position: absolute; left: 50%; top: 50%;
+      transform: translate(-50%, -50%); color: hsl(37 67% 93%);
+      font-size: clamp(1.1rem, 2vw, 2rem);
+      z-index: 2;
+    }
+
+    /* 主题化的 glow 按钮（mystic）*/
+    html[data-theme='mystic'] .btn-glow {
+      background: linear-gradient(135deg, hsl(38 47% 58%) 0%, hsl(43 72% 69%) 50%, hsl(38 47% 58%) 100%);
+      color: hsl(var(--primary-foreground));
+      box-shadow: 0 0 24px hsl(43 72% 69% / 0.4), 0 0 48px hsl(38 47% 58% / 0.2);
+      border: 1px solid hsl(43 72% 69%);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+    html[data-theme='mystic'] .btn-glow:hover {
+      box-shadow: 0 0 36px hsl(43 72% 69% / 0.6), 0 0 80px hsl(38 47% 58% / 0.3);
+      transform: translateY(-1px);
+    }
+
+    html[data-theme='minimal'] .btn-glow {
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+    }
+    html[data-theme='minimal'] .btn-glow:hover {
+      background: hsl(0 0% 8%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px hsl(0 0% 0% / 0.15);
+    }
+
+    html[data-theme='nature'] .btn-glow {
+      background: linear-gradient(135deg, hsl(18 42% 50%) 0%, hsl(30 52% 65%) 100%);
+      color: hsl(var(--primary-foreground));
+      border-radius: 100px;
+      box-shadow: 0 4px 12px hsl(18 42% 50% / 0.3);
+    }
+    html[data-theme='nature'] .btn-glow:hover {
+      box-shadow: 0 8px 20px hsl(18 42% 50% / 0.4);
+      transform: translateY(-2px);
+    }
+
+    /* 分隔线装饰 */
+    .divider-deco {
+      display: flex; align-items: center; gap: 12px;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.85rem;
+    }
+    .divider-deco::before, .divider-deco::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, transparent 0%, hsl(var(--border)) 50%, transparent 100%);
+    }
+    html[data-theme='mystic'] .divider-deco::before,
+    html[data-theme='mystic'] .divider-deco::after {
+      background: linear-gradient(90deg, transparent 0%, hsl(38 47% 58%) 50%, transparent 100%);
+    }
+
+    /* 手写体（nature 特有） */
+    html[data-theme='nature'] .handwritten {
+      font-family: var(--font-decorative);
+      font-size: 1.25em;
+      color: hsl(var(--primary));
+    }
+
+    /* 手机外框 */
+    .phone-frame {
+      width: 375px;
+      height: 812px;
+      border-radius: 40px;
+      border: 10px solid hsl(0 0% 18%);
+      box-shadow: 0 40px 80px hsl(0 0% 0% / 0.4), 0 0 0 2px hsl(0 0% 0% / 0.6);
+      overflow: hidden;
+      background: hsl(var(--background));
+      position: relative;
+      flex-shrink: 0;
+    }
+    .phone-frame::before {
+      content: ''; position: absolute;
+      top: 12px; left: 50%; transform: translateX(-50%);
+      width: 120px; height: 28px;
+      background: hsl(0 0% 0%);
+      border-radius: 16px; z-index: 100;
+    }
+
+    .phone-screen {
+      width: 100%; height: 100%;
+      overflow-y: auto;
+      padding-top: 54px;
+    }
+
+    /* View Transition */
+    ::view-transition-old(root),
+    ::view-transition-new(root) { animation-duration: 400ms; }
+
+    /* 隐藏未激活的页面 */
+    [data-page]:not(.is-active) { display: none; }
+
+    /* 无障碍 */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body class="font-body bg-background text-foreground">
+  <div class="bg-starfield"></div>
+  <div class="bg-halo"></div>
+  <div class="bg-grain"></div>
+  <div class="bg-sun"></div>
+
+  <!-- 顶部导航（原型专用，不属于 app 内部）-->
+  <header class="sticky top-0 z-50 backdrop-blur bg-background/80 border-b border-border">
+    <div class="max-w-[1400px] mx-auto flex items-center justify-between gap-md px-md py-sm">
+      <div class="flex items-center gap-md">
+        <h1 class="font-display text-lg font-semibold tracking-widest">LUMINA TAROT</h1>
+        <span class="text-xs text-muted-foreground hidden md:inline">HTML 原型 · 2026-04-24</span>
+      </div>
+
+      <div class="flex items-center gap-sm">
+        <!-- 主题切换器 -->
+        <div class="flex items-center gap-xs border border-border rounded-lg p-xs" role="tablist" aria-label="主题">
+          <button class="theme-chip is-active flex items-center gap-xs px-sm py-xs rounded-md text-xs font-medium transition" data-theme-id="mystic">
+            <span class="flex gap-[2px]">
+              <span class="w-2 h-2 rounded-full" style="background:#0b0d1a"></span>
+              <span class="w-2 h-2 rounded-full" style="background:#c9a961"></span>
+              <span class="w-2 h-2 rounded-full" style="background:#7b5ea8"></span>
+            </span>
+            <span class="hidden sm:inline">神秘</span>
+          </button>
+          <button class="theme-chip flex items-center gap-xs px-sm py-xs rounded-md text-xs font-medium transition" data-theme-id="minimal">
+            <span class="flex gap-[2px]">
+              <span class="w-2 h-2 rounded-full" style="background:#faf8f4"></span>
+              <span class="w-2 h-2 rounded-full" style="background:#b8a896"></span>
+              <span class="w-2 h-2 rounded-full" style="background:#a8b9ca"></span>
+            </span>
+            <span class="hidden sm:inline">极简</span>
+          </button>
+          <button class="theme-chip flex items-center gap-xs px-sm py-xs rounded-md text-xs font-medium transition" data-theme-id="nature">
+            <span class="flex gap-[2px]">
+              <span class="w-2 h-2 rounded-full" style="background:#f4ecd8"></span>
+              <span class="w-2 h-2 rounded-full" style="background:#b56b4a"></span>
+              <span class="w-2 h-2 rounded-full" style="background:#7a8c6a"></span>
+            </span>
+            <span class="hidden sm:inline">自然</span>
+          </button>
+        </div>
+
+        <!-- 设备切换 -->
+        <div class="flex items-center gap-xs border border-border rounded-lg p-xs">
+          <button class="device-chip is-active px-sm py-xs rounded-md text-xs font-medium" data-device="desktop">桌面</button>
+          <button class="device-chip px-sm py-xs rounded-md text-xs font-medium" data-device="phone">手机</button>
+          <button class="device-chip px-sm py-xs rounded-md text-xs font-medium" data-device="compare">三主题对比</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 布局容器 -->
+  <div class="flex max-w-[1400px] mx-auto relative z-10">
+    <!-- 侧边栏：页面列表 -->
+    <aside class="hidden lg:block w-[220px] shrink-0 border-r border-border min-h-[calc(100vh-65px)] p-md sticky top-[65px]">
+      <nav aria-label="页面导航">
+        <p class="text-xs uppercase tracking-wider text-muted-foreground mb-sm">核心流程</p>
+        <ul class="space-y-xs mb-lg">
+          <li><button class="page-nav w-full text-left px-sm py-xs rounded-md text-sm transition" data-page-link="splash">启动页</button></li>
+          <li><button class="page-nav is-active w-full text-left px-sm py-xs rounded-md text-sm transition font-medium" data-page-link="home">首页</button></li>
+          <li><button class="page-nav w-full text-left px-sm py-xs rounded-md text-sm transition" data-page-link="spread">牌阵选择</button></li>
+          <li><button class="page-nav w-full text-left px-sm py-xs rounded-md text-sm transition" data-page-link="question">提问输入</button></li>
+          <li><button class="page-nav w-full text-left px-sm py-xs rounded-md text-sm transition" data-page-link="shuffle">洗牌</button></li>
+          <li><button class="page-nav w-full text-left px-sm py-xs rounded-md text-sm transition" data-page-link="reveal">抽牌翻牌</button></li>
+          <li><button class="page-nav w-full text-left px-sm py-xs rounded-md text-sm transition" data-page-link="reading">解读详情</button></li>
+        </ul>
+
+        <p class="text-xs uppercase tracking-wider text-muted-foreground mb-sm">其他页面</p>
+        <ul class="space-y-xs mb-lg">
+          <li><button class="page-nav w-full text-left px-sm py-xs rounded-md text-sm transition" data-page-link="library">牌库</button></li>
+          <li><button class="page-nav w-full text-left px-sm py-xs rounded-md text-sm transition" data-page-link="card-detail">单张牌详情</button></li>
+          <li><button class="page-nav w-full text-left px-sm py-xs rounded-md text-sm transition" data-page-link="history">历史记录</button></li>
+          <li><button class="page-nav w-full text-left px-sm py-xs rounded-md text-sm transition" data-page-link="settings">设置</button></li>
+        </ul>
+
+        <p class="text-xs uppercase tracking-wider text-muted-foreground mb-sm">工具</p>
+        <ul class="space-y-xs">
+          <li><button class="page-nav w-full text-left px-sm py-xs rounded-md text-sm transition" data-page-link="tokens">Token 色卡</button></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- 主区 -->
+    <main class="flex-1 min-w-0 p-md lg:p-lg" id="mainStage">
+
+      <!-- ============ 启动页 Splash ============ -->
+      <section data-page="splash" class="animate-fadeIn">
+        <div class="min-h-[60vh] flex flex-col items-center justify-center text-center gap-lg py-2xl">
+          <div class="relative">
+            <div class="w-[140px] h-[140px] rounded-full border border-primary/40 flex items-center justify-center relative">
+              <div class="absolute inset-2 rounded-full border border-primary/20"></div>
+              <span class="font-display text-5xl text-primary">✦</span>
+            </div>
+          </div>
+          <div>
+            <h1 class="font-display text-5xl tracking-widest mb-sm">LUMINA</h1>
+            <p class="font-display text-sm tracking-[0.3em] text-muted-foreground">T · A · R · O · T</p>
+          </div>
+          <p class="text-muted-foreground text-sm max-w-[28ch]">在黑暗中点亮微光</p>
+        </div>
+      </section>
+
+      <!-- ============ 首页 Home ============ -->
+      <section data-page="home" class="is-active animate-fadeIn">
+        <!-- Hero -->
+        <div class="text-center py-2xl">
+          <p class="font-deco text-sm tracking-widest text-muted-foreground mb-sm">TODAY · 2026.04.24</p>
+          <h1 class="font-display text-4xl md:text-5xl tracking-wide mb-md">今日之问</h1>
+          <p class="text-muted-foreground max-w-[42ch] mx-auto leading-relaxed mb-lg">
+            塔罗并非预言，而是一面镜子。<br class="hidden md:inline" />
+            你所抽到的每一张牌，都映照出此刻内心最真实的侧影。
+          </p>
+
+          <div class="flex gap-md justify-center flex-wrap">
+            <button class="btn-glow inline-flex items-center gap-sm px-xl py-md rounded-lg text-sm font-semibold transition-all">
+              <span>开始占卜</span>
+              <span aria-hidden="true">→</span>
+            </button>
+            <button class="inline-flex items-center gap-sm px-xl py-md rounded-lg text-sm font-medium border border-border text-foreground hover:bg-muted transition-all">
+              今日一牌
+            </button>
+          </div>
+        </div>
+
+        <div class="divider-deco my-xl">
+          <span>—</span>
+        </div>
+
+        <!-- 今日运势卡 -->
+        <div class="grid md:grid-cols-3 gap-md mb-xl">
+          <!-- Card 1 -->
+          <article class="rounded-lg border border-border bg-card text-card-foreground p-lg shadow-sm">
+            <div class="flex items-start justify-between mb-md">
+              <div>
+                <p class="text-xs uppercase tracking-wider text-muted-foreground mb-xs">事业</p>
+                <h3 class="font-display text-lg">魔术师 正位</h3>
+              </div>
+              <span class="text-xs px-sm py-xs rounded-full border border-primary/40 text-primary">TODAY</span>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed">
+              你拥有当下所需的一切资源，关键在于如何整合它们。
+            </p>
+          </article>
+          <article class="rounded-lg border border-border bg-card text-card-foreground p-lg shadow-sm">
+            <div class="flex items-start justify-between mb-md">
+              <div>
+                <p class="text-xs uppercase tracking-wider text-muted-foreground mb-xs">感情</p>
+                <h3 class="font-display text-lg">圣杯二 正位</h3>
+              </div>
+              <span class="text-xs px-sm py-xs rounded-full border border-primary/40 text-primary">TODAY</span>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed">
+              一场真诚的对话将打开新的理解通道。
+            </p>
+          </article>
+          <article class="rounded-lg border border-border bg-card text-card-foreground p-lg shadow-sm">
+            <div class="flex items-start justify-between mb-md">
+              <div>
+                <p class="text-xs uppercase tracking-wider text-muted-foreground mb-xs">自我</p>
+                <h3 class="font-display text-lg">星星 正位</h3>
+              </div>
+              <span class="text-xs px-sm py-xs rounded-full border border-primary/40 text-primary">TODAY</span>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed">
+              在低谷之后，希望正在悄悄重建。
+            </p>
+          </article>
+        </div>
+
+        <!-- 最近一次占卜 -->
+        <div class="rounded-lg border border-border bg-card text-card-foreground p-lg shadow-sm">
+          <div class="flex items-center justify-between mb-md">
+            <h2 class="font-display text-xl">最近一次占卜</h2>
+            <button class="text-xs text-muted-foreground hover:text-foreground transition">查看全部 →</button>
+          </div>
+          <div class="flex items-center gap-md">
+            <div class="w-[72px] aspect-[2/3] rounded-md card-back"></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-muted-foreground mb-xs">2 小时前 · 单张牌</p>
+              <p class="text-sm line-clamp-2">"工作焦虑该如何面对？" — 抽到 <span class="text-primary font-medium">隐士 正位</span>，建议内省。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 牌阵选择 SpreadSelect ============ -->
+      <section data-page="spread" class="animate-fadeIn">
+        <div class="mb-xl">
+          <button class="text-sm text-muted-foreground hover:text-foreground mb-md inline-flex items-center gap-xs transition">
+            <span>←</span><span>返回首页</span>
+          </button>
+          <h1 class="font-display text-3xl mb-sm">选择牌阵</h1>
+          <p class="text-muted-foreground max-w-[48ch]">不同的牌阵适合不同的问题。选择最贴合此刻的那一种。</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-md">
+          <article class="group rounded-lg border border-border bg-card text-card-foreground p-lg shadow-sm hover:shadow-md transition cursor-pointer hover:-translate-y-1 duration-300">
+            <div class="flex items-start gap-md mb-md">
+              <div class="shrink-0 w-12 h-12 rounded-md bg-muted flex items-center justify-center text-primary">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="9" y="4" width="6" height="16" rx="1" /></svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-display text-lg mb-xs">单张牌 · Daily Draw</h3>
+                <p class="text-sm text-muted-foreground">1 张 · 约 3 分钟</p>
+              </div>
+              <span class="text-xs px-sm py-xs rounded-full bg-primary text-primary-foreground">推荐</span>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed">轻盈的开始，一张牌即给予今日启示。适合日常快问与晨间冥想。</p>
+          </article>
+
+          <article class="group rounded-lg border border-border bg-card text-card-foreground p-lg shadow-sm hover:shadow-md transition cursor-pointer hover:-translate-y-1 duration-300">
+            <div class="flex items-start gap-md mb-md">
+              <div class="shrink-0 w-12 h-12 rounded-md bg-muted flex items-center justify-center text-primary">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="6" height="16" rx="1" /><rect x="10" y="4" width="6" height="16" rx="1" /><rect x="18" y="4" width="4" height="16" rx="1" /></svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-display text-lg mb-xs">三张牌 · Past-Present-Future</h3>
+                <p class="text-sm text-muted-foreground">3 张 · 约 8 分钟</p>
+              </div>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed">过去 · 现在 · 未来。最经典的时间线结构，洞察一段情境的脉络。</p>
+          </article>
+
+          <article class="group rounded-lg border border-border bg-card text-card-foreground p-lg shadow-sm hover:shadow-md transition cursor-pointer hover:-translate-y-1 duration-300">
+            <div class="flex items-start gap-md mb-md">
+              <div class="shrink-0 w-12 h-12 rounded-md bg-muted flex items-center justify-center text-primary">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L20 7v10L12 22L4 17V7z"/></svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-display text-lg mb-xs">凯尔特十字 · Celtic Cross</h3>
+                <p class="text-sm text-muted-foreground">10 张 · 约 20 分钟</p>
+              </div>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed">十张牌解析全景，包含现状、阻碍、潜在影响与最终结果。适合重大抉择。</p>
+          </article>
+
+          <article class="group rounded-lg border border-border bg-card text-card-foreground p-lg shadow-sm hover:shadow-md transition cursor-pointer hover:-translate-y-1 duration-300">
+            <div class="flex items-start gap-md mb-md">
+              <div class="shrink-0 w-12 h-12 rounded-md bg-muted flex items-center justify-center text-primary">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/></svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-display text-lg mb-xs">感情关系 · Relationship</h3>
+                <p class="text-sm text-muted-foreground">5 张 · 约 12 分钟</p>
+              </div>
+            </div>
+            <p class="text-sm text-muted-foreground leading-relaxed">从双方视角看待一段关系：你的感受、对方的感受、阻碍、共识、走向。</p>
+          </article>
+        </div>
+
+        <div class="mt-xl flex justify-center">
+          <button class="btn-glow inline-flex items-center gap-sm px-xl py-md rounded-lg text-sm font-semibold">
+            继续 <span>→</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ============ 提问输入 Question ============ -->
+      <section data-page="question" class="animate-fadeIn">
+        <div class="max-w-[560px] mx-auto">
+          <div class="mb-xl text-center">
+            <p class="text-xs uppercase tracking-widest text-muted-foreground mb-sm">步骤 2 / 5</p>
+            <h1 class="font-display text-3xl mb-sm">倾听你的问题</h1>
+            <p class="text-muted-foreground">静下心来，把此刻最想问的事写下来。</p>
+          </div>
+
+          <div class="rounded-lg border border-border bg-card text-card-foreground p-lg shadow-sm mb-md">
+            <label class="block text-xs font-medium mb-sm uppercase tracking-wider text-muted-foreground">你的问题</label>
+            <textarea
+              rows="5"
+              placeholder="例：我该如何面对眼前工作上的压力？"
+              class="w-full bg-transparent border border-input rounded-md px-md py-sm text-base resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition"
+            ></textarea>
+            <p class="text-xs text-muted-foreground mt-sm">建议使用开放式问题，例如"我需要看见什么……"而非"会不会……"</p>
+          </div>
+
+          <div class="rounded-lg border border-dashed border-border p-lg mb-xl bg-muted/30">
+            <p class="text-xs text-muted-foreground mb-sm">灵感示例</p>
+            <div class="flex flex-wrap gap-sm">
+              <button class="text-xs px-md py-sm rounded-full border border-border bg-card hover:bg-muted transition">我需要看见什么，才能走出当前困境？</button>
+              <button class="text-xs px-md py-sm rounded-full border border-border bg-card hover:bg-muted transition">这段关系正在走向什么？</button>
+              <button class="text-xs px-md py-sm rounded-full border border-border bg-card hover:bg-muted transition">今天的能量适合做什么？</button>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center">
+            <button class="text-sm text-muted-foreground hover:text-foreground transition inline-flex items-center gap-xs">
+              <span>←</span><span>上一步</span>
+            </button>
+            <button class="btn-glow inline-flex items-center gap-sm px-xl py-md rounded-lg text-sm font-semibold">
+              进入洗牌 <span>→</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 洗牌 Shuffle ============ -->
+      <section data-page="shuffle" class="animate-fadeIn">
+        <div class="text-center">
+          <p class="text-xs uppercase tracking-widest text-muted-foreground mb-sm">步骤 3 / 5</p>
+          <h1 class="font-display text-3xl mb-sm">长按屏幕开始洗牌</h1>
+          <p class="text-muted-foreground mb-xl">闭上眼睛，把注意力放在刚才的问题上。</p>
+
+          <!-- 牌堆可视化 -->
+          <div class="relative h-[320px] flex items-center justify-center mb-xl">
+            <div class="relative w-[180px] h-[280px]">
+              <div class="absolute inset-0 card-back rounded-lg" style="transform:translate(-14px,-8px) rotate(-6deg)"></div>
+              <div class="absolute inset-0 card-back rounded-lg" style="transform:translate(-6px,-3px) rotate(-2deg)"></div>
+              <div class="absolute inset-0 card-back rounded-lg"></div>
+              <div class="absolute inset-0 card-back rounded-lg" style="transform:translate(6px,3px) rotate(2deg)"></div>
+              <div class="absolute inset-0 card-back rounded-lg" style="transform:translate(14px,8px) rotate(6deg)"></div>
+            </div>
+          </div>
+
+          <!-- 长按指引 -->
+          <div class="flex items-center justify-center gap-md mb-xl">
+            <div class="w-14 h-14 rounded-full border-2 border-primary/50 animate-pulse flex items-center justify-center">
+              <span class="w-4 h-4 rounded-full bg-primary"></span>
+            </div>
+            <p class="text-sm text-muted-foreground">长按此处 3 秒 →</p>
+          </div>
+
+          <!-- 进度条 -->
+          <div class="max-w-[320px] mx-auto">
+            <div class="h-1 rounded-full bg-muted overflow-hidden">
+              <div class="h-full bg-primary rounded-full" style="width:67%"></div>
+            </div>
+            <p class="text-xs text-muted-foreground mt-sm">已洗：67% · 请保持专注</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 抽牌翻牌 Reveal ============ -->
+      <section data-page="reveal" class="animate-fadeIn">
+        <div class="mb-xl text-center">
+          <p class="text-xs uppercase tracking-widest text-muted-foreground mb-sm">步骤 4 / 5</p>
+          <h1 class="font-display text-3xl mb-sm">点击任意一张翻开</h1>
+          <p class="text-muted-foreground">第 <span class="text-primary font-semibold">2</span> / 3 张 · 已翻开 1 张</p>
+        </div>
+
+        <!-- 牌阵：3 张 -->
+        <div class="grid grid-cols-3 gap-md md:gap-lg max-w-[720px] mx-auto mb-xl">
+          <!-- 已翻开 -->
+          <div class="flex flex-col items-center gap-sm">
+            <div class="w-full aspect-[2/3] rounded-lg border border-border bg-card p-sm flex flex-col items-center justify-between shadow-md">
+              <span class="font-display text-sm text-primary">IX</span>
+              <span class="font-display text-5xl text-accent">✧</span>
+              <span class="font-display text-xs tracking-wider text-center">THE HERMIT<br/>隐士</span>
+            </div>
+            <p class="text-xs text-muted-foreground">过去</p>
+          </div>
+          <!-- 待翻 -->
+          <div class="flex flex-col items-center gap-sm">
+            <div class="w-full aspect-[2/3] rounded-lg card-back cursor-pointer hover:-translate-y-2 transition-all duration-500 shadow-lg ring-2 ring-primary ring-offset-2 ring-offset-background"></div>
+            <p class="text-xs text-primary font-medium">现在 · 点击翻开</p>
+          </div>
+          <div class="flex flex-col items-center gap-sm">
+            <div class="w-full aspect-[2/3] rounded-lg card-back cursor-pointer hover:-translate-y-2 transition-all duration-500 shadow-lg opacity-60"></div>
+            <p class="text-xs text-muted-foreground">未来</p>
+          </div>
+        </div>
+
+        <div class="text-center">
+          <button class="text-sm text-muted-foreground hover:text-foreground transition">重新洗牌</button>
+        </div>
+      </section>
+
+      <!-- ============ 解读详情 Reading ============ -->
+      <section data-page="reading" class="animate-fadeIn">
+        <div class="mb-xl flex items-center justify-between">
+          <button class="text-sm text-muted-foreground hover:text-foreground transition inline-flex items-center gap-xs">
+            <span>←</span><span>返回</span>
+          </button>
+          <div class="flex items-center gap-sm">
+            <button class="text-xs px-md py-sm rounded-md border border-border hover:bg-muted transition">保存</button>
+            <button class="text-xs px-md py-sm rounded-md border border-border hover:bg-muted transition">分享</button>
+          </div>
+        </div>
+
+        <!-- Hero -->
+        <div class="text-center mb-xl">
+          <p class="text-xs uppercase tracking-widest text-muted-foreground mb-sm">2026.04.24 · 三张牌</p>
+          <h1 class="font-display text-3xl mb-sm">你的解读</h1>
+          <p class="text-muted-foreground max-w-[42ch] mx-auto italic">"我该如何面对眼前工作上的压力？"</p>
+        </div>
+
+        <!-- 三张牌横排 -->
+        <div class="grid grid-cols-3 gap-md max-w-[720px] mx-auto mb-xl">
+          <div class="text-center">
+            <div class="aspect-[2/3] rounded-lg border border-border bg-card p-sm flex flex-col items-center justify-between shadow-md mb-sm">
+              <span class="font-display text-sm text-primary">IX</span>
+              <span class="font-display text-4xl text-accent">✧</span>
+              <span class="font-display text-[11px] text-center">HERMIT</span>
+            </div>
+            <p class="text-xs font-medium">隐士 · 过去</p>
+          </div>
+          <div class="text-center">
+            <div class="aspect-[2/3] rounded-lg border border-border bg-card p-sm flex flex-col items-center justify-between shadow-md mb-sm">
+              <span class="font-display text-sm text-primary">I</span>
+              <span class="font-display text-4xl text-accent">∞</span>
+              <span class="font-display text-[11px] text-center">MAGICIAN</span>
+            </div>
+            <p class="text-xs font-medium">魔术师 · 现在</p>
+          </div>
+          <div class="text-center">
+            <div class="aspect-[2/3] rounded-lg border border-border bg-card p-sm flex flex-col items-center justify-between shadow-md mb-sm">
+              <span class="font-display text-sm text-primary">XVII</span>
+              <span class="font-display text-4xl text-accent">✦</span>
+              <span class="font-display text-[11px] text-center">STAR</span>
+            </div>
+            <p class="text-xs font-medium">星星 · 未来</p>
+          </div>
+        </div>
+
+        <!-- 整体解读 -->
+        <div class="rounded-lg border border-border bg-card text-card-foreground p-lg shadow-sm mb-md">
+          <h2 class="font-display text-xl mb-md">整体解读</h2>
+          <p class="leading-relaxed text-[17px] mb-md">
+            这副牌阵呈现了一段从<span class="text-primary font-medium">深度内省</span>走向<span class="text-primary font-medium">主动创造</span>，最终抵达<span class="text-primary font-medium">治愈与希望</span>的旅程。
+          </p>
+          <p class="leading-relaxed text-[17px] mb-md">
+            在过去的某段时间，你曾独自面对那些无法言说的压力（隐士），这份孤独并非负面，而是让你积攒了足够的内在资源。
+          </p>
+          <p class="leading-relaxed text-[17px]">
+            <span class="handwritten">当下，你已经拥有所需的一切</span>—— 技能、资源、支持系统，都在你手边（魔术师）。未来的路上，星星为你点亮方向，继续相信自己。
+          </p>
+        </div>
+
+        <!-- 单张卡详解（折叠） -->
+        <div class="space-y-sm mb-xl">
+          <details class="rounded-lg border border-border bg-card text-card-foreground p-md" open>
+            <summary class="cursor-pointer font-display text-lg flex items-center justify-between">
+              <span>隐士 IX · 过去</span>
+              <span class="text-xs text-muted-foreground">展开 / 收起</span>
+            </summary>
+            <div class="mt-md space-y-md pt-md border-t border-border">
+              <div class="flex gap-sm flex-wrap">
+                <span class="text-xs px-sm py-xs rounded-full bg-muted text-muted-foreground">内省</span>
+                <span class="text-xs px-sm py-xs rounded-full bg-muted text-muted-foreground">孤独</span>
+                <span class="text-xs px-sm py-xs rounded-full bg-muted text-muted-foreground">寻找答案</span>
+                <span class="text-xs px-sm py-xs rounded-full bg-muted text-muted-foreground">智慧</span>
+              </div>
+              <p class="text-sm leading-relaxed text-muted-foreground">
+                隐士手提一盏明灯，独自站在山巅。他并不孤独，只是暂时离开了人群，为了听见内心的声音。这段独处的时光，赋予你看清问题本质的能力。
+              </p>
+            </div>
+          </details>
+          <details class="rounded-lg border border-border bg-card text-card-foreground p-md">
+            <summary class="cursor-pointer font-display text-lg flex items-center justify-between">
+              <span>魔术师 I · 现在</span>
+              <span class="text-xs text-muted-foreground">展开 / 收起</span>
+            </summary>
+          </details>
+          <details class="rounded-lg border border-border bg-card text-card-foreground p-md">
+            <summary class="cursor-pointer font-display text-lg flex items-center justify-between">
+              <span>星星 XVII · 未来</span>
+              <span class="text-xs text-muted-foreground">展开 / 收起</span>
+            </summary>
+          </details>
+        </div>
+
+        <!-- 底部 CTA -->
+        <div class="rounded-lg border border-dashed border-border bg-muted/30 p-lg text-center">
+          <p class="text-sm text-muted-foreground mb-md">这次占卜给你带来了启发吗？</p>
+          <div class="flex justify-center gap-sm">
+            <button class="btn-glow px-lg py-sm rounded-md text-sm font-medium">保存到历史</button>
+            <button class="px-lg py-sm rounded-md text-sm font-medium border border-border hover:bg-muted transition">再占一次</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 牌库 Library ============ -->
+      <section data-page="library" class="animate-fadeIn">
+        <div class="mb-xl">
+          <h1 class="font-display text-3xl mb-sm">牌库 · 78 张</h1>
+          <p class="text-muted-foreground">翻阅每一张牌，了解它的含义、象征、正逆位提示。</p>
+        </div>
+
+        <!-- 搜索 + 筛选 -->
+        <div class="flex flex-col md:flex-row gap-md mb-xl">
+          <div class="flex-1">
+            <input type="text" placeholder="搜索：死神 / Death / XIII"
+              class="w-full px-md py-sm bg-card border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring transition" />
+          </div>
+          <div class="flex gap-sm flex-wrap">
+            <button class="px-md py-sm rounded-md text-xs font-medium bg-primary text-primary-foreground">全部</button>
+            <button class="px-md py-sm rounded-md text-xs font-medium border border-border hover:bg-muted transition">大阿尔卡那 22</button>
+            <button class="px-md py-sm rounded-md text-xs font-medium border border-border hover:bg-muted transition">权杖 14</button>
+            <button class="px-md py-sm rounded-md text-xs font-medium border border-border hover:bg-muted transition">圣杯 14</button>
+            <button class="px-md py-sm rounded-md text-xs font-medium border border-border hover:bg-muted transition">宝剑 14</button>
+            <button class="px-md py-sm rounded-md text-xs font-medium border border-border hover:bg-muted transition">钱币 14</button>
+          </div>
+        </div>
+
+        <!-- 网格 -->
+        <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-md">
+          <!-- 循环示意，取少量样本 -->
+          <figure class="space-y-sm group cursor-pointer">
+            <div class="aspect-[2/3] rounded-lg border border-border bg-card p-sm flex flex-col items-center justify-between shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-md">
+              <span class="font-display text-xs text-primary">0</span>
+              <span class="font-display text-3xl text-accent">✦</span>
+              <span class="font-display text-[10px] text-center">FOOL</span>
+            </div>
+            <figcaption class="text-xs text-center">愚者</figcaption>
+          </figure>
+          <figure class="space-y-sm group cursor-pointer">
+            <div class="aspect-[2/3] rounded-lg border border-border bg-card p-sm flex flex-col items-center justify-between shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-md">
+              <span class="font-display text-xs text-primary">I</span>
+              <span class="font-display text-3xl text-accent">∞</span>
+              <span class="font-display text-[10px] text-center">MAGICIAN</span>
+            </div>
+            <figcaption class="text-xs text-center">魔术师</figcaption>
+          </figure>
+          <figure class="space-y-sm group cursor-pointer">
+            <div class="aspect-[2/3] rounded-lg border border-border bg-card p-sm flex flex-col items-center justify-between shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-md">
+              <span class="font-display text-xs text-primary">II</span>
+              <span class="font-display text-3xl text-accent">☽</span>
+              <span class="font-display text-[10px] text-center">HIGH PRIESTESS</span>
+            </div>
+            <figcaption class="text-xs text-center">女祭司</figcaption>
+          </figure>
+          <figure class="space-y-sm group cursor-pointer">
+            <div class="aspect-[2/3] rounded-lg border border-border bg-card p-sm flex flex-col items-center justify-between shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-md">
+              <span class="font-display text-xs text-primary">III</span>
+              <span class="font-display text-3xl text-accent">❀</span>
+              <span class="font-display text-[10px] text-center">EMPRESS</span>
+            </div>
+            <figcaption class="text-xs text-center">皇后</figcaption>
+          </figure>
+          <figure class="space-y-sm group cursor-pointer">
+            <div class="aspect-[2/3] rounded-lg border border-border bg-card p-sm flex flex-col items-center justify-between shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-md">
+              <span class="font-display text-xs text-primary">IV</span>
+              <span class="font-display text-3xl text-accent">♔</span>
+              <span class="font-display text-[10px] text-center">EMPEROR</span>
+            </div>
+            <figcaption class="text-xs text-center">皇帝</figcaption>
+          </figure>
+          <figure class="space-y-sm group cursor-pointer">
+            <div class="aspect-[2/3] rounded-lg border border-border bg-card p-sm flex flex-col items-center justify-between shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-md">
+              <span class="font-display text-xs text-primary">V</span>
+              <span class="font-display text-3xl text-accent">☉</span>
+              <span class="font-display text-[10px] text-center">HIEROPHANT</span>
+            </div>
+            <figcaption class="text-xs text-center">教皇</figcaption>
+          </figure>
+          <figure class="space-y-sm group cursor-pointer">
+            <div class="aspect-[2/3] rounded-lg border border-border bg-card p-sm flex flex-col items-center justify-between shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-md">
+              <span class="font-display text-xs text-primary">VI</span>
+              <span class="font-display text-3xl text-accent">♥</span>
+              <span class="font-display text-[10px] text-center">LOVERS</span>
+            </div>
+            <figcaption class="text-xs text-center">恋人</figcaption>
+          </figure>
+          <figure class="space-y-sm group cursor-pointer">
+            <div class="aspect-[2/3] rounded-lg border border-border bg-card p-sm flex flex-col items-center justify-between shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-md">
+              <span class="font-display text-xs text-primary">VII</span>
+              <span class="font-display text-3xl text-accent">⚔</span>
+              <span class="font-display text-[10px] text-center">CHARIOT</span>
+            </div>
+            <figcaption class="text-xs text-center">战车</figcaption>
+          </figure>
+          <figure class="space-y-sm group cursor-pointer">
+            <div class="aspect-[2/3] rounded-lg border border-border bg-card p-sm flex flex-col items-center justify-between shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-md">
+              <span class="font-display text-xs text-primary">VIII</span>
+              <span class="font-display text-3xl text-accent">♌</span>
+              <span class="font-display text-[10px] text-center">STRENGTH</span>
+            </div>
+            <figcaption class="text-xs text-center">力量</figcaption>
+          </figure>
+          <figure class="space-y-sm group cursor-pointer">
+            <div class="aspect-[2/3] rounded-lg border border-border bg-card p-sm flex flex-col items-center justify-between shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-md">
+              <span class="font-display text-xs text-primary">IX</span>
+              <span class="font-display text-3xl text-accent">✧</span>
+              <span class="font-display text-[10px] text-center">HERMIT</span>
+            </div>
+            <figcaption class="text-xs text-center">隐士</figcaption>
+          </figure>
+          <figure class="space-y-sm group cursor-pointer">
+            <div class="aspect-[2/3] rounded-lg border border-border bg-card p-sm flex flex-col items-center justify-between shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-md">
+              <span class="font-display text-xs text-primary">X</span>
+              <span class="font-display text-3xl text-accent">⊙</span>
+              <span class="font-display text-[10px] text-center">WHEEL</span>
+            </div>
+            <figcaption class="text-xs text-center">命运之轮</figcaption>
+          </figure>
+          <figure class="space-y-sm group cursor-pointer">
+            <div class="aspect-[2/3] rounded-lg border border-border bg-card p-sm flex flex-col items-center justify-between shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-md">
+              <span class="font-display text-xs text-primary">XI</span>
+              <span class="font-display text-3xl text-accent">⚖</span>
+              <span class="font-display text-[10px] text-center">JUSTICE</span>
+            </div>
+            <figcaption class="text-xs text-center">正义</figcaption>
+          </figure>
+        </div>
+
+        <div class="flex justify-center mt-xl">
+          <button class="px-lg py-sm text-sm text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-muted transition">加载更多 · 还有 66 张</button>
+        </div>
+      </section>
+
+      <!-- ============ 单张牌详情 CardDetail ============ -->
+      <section data-page="card-detail" class="animate-fadeIn">
+        <button class="text-sm text-muted-foreground hover:text-foreground mb-md inline-flex items-center gap-xs transition">
+          <span>←</span><span>返回牌库</span>
+        </button>
+
+        <div class="grid md:grid-cols-[auto_1fr] gap-xl">
+          <!-- 左：大牌 -->
+          <div class="flex justify-center md:justify-start">
+            <div class="w-[260px] aspect-[2/3] rounded-lg border border-border bg-card p-md flex flex-col items-center justify-between shadow-lg">
+              <span class="font-display text-lg text-primary">IX</span>
+              <span class="font-display text-8xl text-accent">✧</span>
+              <span class="font-display text-sm tracking-widest text-center">THE HERMIT<br/>隐士</span>
+            </div>
+          </div>
+
+          <!-- 右：详情 -->
+          <div>
+            <p class="text-xs uppercase tracking-widest text-muted-foreground mb-sm">大阿尔卡那 · 9</p>
+            <h1 class="font-display text-4xl mb-sm">隐士</h1>
+            <p class="text-muted-foreground mb-lg">THE HERMIT · IX</p>
+
+            <!-- 关键词 -->
+            <div class="flex gap-sm flex-wrap mb-lg">
+              <span class="text-xs px-md py-sm rounded-full bg-primary/10 text-primary border border-primary/30">内省</span>
+              <span class="text-xs px-md py-sm rounded-full bg-primary/10 text-primary border border-primary/30">孤独</span>
+              <span class="text-xs px-md py-sm rounded-full bg-primary/10 text-primary border border-primary/30">寻找答案</span>
+              <span class="text-xs px-md py-sm rounded-full bg-primary/10 text-primary border border-primary/30">智慧之光</span>
+              <span class="text-xs px-md py-sm rounded-full bg-primary/10 text-primary border border-primary/30">独处</span>
+            </div>
+
+            <!-- Tab -->
+            <div class="flex border-b border-border mb-lg">
+              <button class="tab-btn is-active px-md py-sm text-sm font-medium border-b-2 border-primary text-foreground">含义</button>
+              <button class="tab-btn px-md py-sm text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition">象征</button>
+              <button class="tab-btn px-md py-sm text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition">正逆位</button>
+              <button class="tab-btn px-md py-sm text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition">历史</button>
+            </div>
+
+            <!-- 内容 -->
+            <div class="space-y-md">
+              <p class="text-[17px] leading-relaxed">
+                隐士代表一段自愿选择的独处时光。他并非逃避，而是为了在寂静中听见真正的答案。
+              </p>
+              <p class="text-[17px] leading-relaxed">
+                画面中，他手提一盏明灯，灯芯是一颗六芒星 ——那是智慧的象征。他站在山顶，俯瞰自己走过的所有路。
+              </p>
+              <div class="rounded-md bg-muted/40 border border-border p-md">
+                <p class="handwritten text-lg leading-relaxed">
+                  "独处不等于孤独。当你愿意与自己对话，答案自然浮现。"
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 历史记录 History ============ -->
+      <section data-page="history" class="animate-fadeIn">
+        <div class="flex items-end justify-between mb-xl">
+          <div>
+            <h1 class="font-display text-3xl mb-sm">占卜历史</h1>
+            <p class="text-muted-foreground">共 32 次占卜 · 本月 7 次</p>
+          </div>
+          <div class="flex gap-sm">
+            <button class="px-md py-sm rounded-md text-xs border border-border hover:bg-muted transition">导出</button>
+            <button class="px-md py-sm rounded-md text-xs border border-destructive/40 text-destructive hover:bg-destructive/10 transition">清空</button>
+          </div>
+        </div>
+
+        <!-- 时间线 -->
+        <div class="space-y-md">
+          <article class="rounded-lg border border-border bg-card text-card-foreground p-lg shadow-sm hover:shadow-md transition cursor-pointer">
+            <div class="flex items-center justify-between mb-sm">
+              <span class="text-xs text-muted-foreground">2 小时前 · 单张牌</span>
+              <span class="text-xs px-sm py-xs rounded-full bg-muted text-muted-foreground">今天</span>
+            </div>
+            <h3 class="font-display text-lg mb-xs">"工作焦虑该如何面对？"</h3>
+            <p class="text-sm text-muted-foreground mb-md">抽到 <span class="text-primary font-medium">隐士 正位</span> — 建议自我内省，暂时独处。</p>
+            <div class="flex gap-sm">
+              <div class="w-8 h-12 rounded-sm card-back"></div>
+            </div>
+          </article>
+
+          <article class="rounded-lg border border-border bg-card text-card-foreground p-lg shadow-sm hover:shadow-md transition cursor-pointer">
+            <div class="flex items-center justify-between mb-sm">
+              <span class="text-xs text-muted-foreground">昨天 · 三张牌</span>
+            </div>
+            <h3 class="font-display text-lg mb-xs">"这段关系正走向何处？"</h3>
+            <p class="text-sm text-muted-foreground mb-md">过去：圣杯二 · 现在：恋人 · 未来：世界 — 关系正走向完满。</p>
+            <div class="flex gap-sm">
+              <div class="w-8 h-12 rounded-sm card-back"></div>
+              <div class="w-8 h-12 rounded-sm card-back"></div>
+              <div class="w-8 h-12 rounded-sm card-back"></div>
+            </div>
+          </article>
+
+          <article class="rounded-lg border border-border bg-card text-card-foreground p-lg shadow-sm hover:shadow-md transition cursor-pointer">
+            <div class="flex items-center justify-between mb-sm">
+              <span class="text-xs text-muted-foreground">3 天前 · 凯尔特十字</span>
+            </div>
+            <h3 class="font-display text-lg mb-xs">"新项目是否值得投入？"</h3>
+            <p class="text-sm text-muted-foreground mb-md">十张牌综合解析 — 结果显示 <span class="text-primary font-medium">需谨慎评估</span>。</p>
+            <div class="flex gap-xs flex-wrap">
+              <div class="w-6 h-9 rounded-sm card-back"></div>
+              <div class="w-6 h-9 rounded-sm card-back"></div>
+              <div class="w-6 h-9 rounded-sm card-back"></div>
+              <div class="w-6 h-9 rounded-sm card-back"></div>
+              <div class="w-6 h-9 rounded-sm card-back"></div>
+              <div class="w-6 h-9 rounded-sm card-back"></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ============ 设置 Settings（含主题选择器） ============ -->
+      <section data-page="settings" class="animate-fadeIn">
+        <div class="max-w-[720px] mx-auto">
+          <h1 class="font-display text-3xl mb-xl">设置</h1>
+
+          <!-- 主题选择 -->
+          <section class="rounded-lg border border-border bg-card text-card-foreground p-lg shadow-sm mb-md">
+            <h2 class="font-display text-xl mb-xs">主题外观</h2>
+            <p class="text-sm text-muted-foreground mb-md">选择最贴合你此刻心境的风格。</p>
+
+            <div class="grid md:grid-cols-3 gap-md">
+              <!-- mystic 卡片 -->
+              <button class="theme-card group rounded-md border-2 border-primary p-md text-left transition hover:shadow-md" data-theme-id="mystic">
+                <div class="h-24 rounded-md mb-md relative overflow-hidden" style="background:linear-gradient(135deg,#0b0d1a 0%,#1c2040 100%);">
+                  <div class="absolute inset-3 rounded border border-[#c9a961]/50"></div>
+                  <span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#e9c978;font-family:'Cinzel',serif;font-size:24px;">✦</span>
+                </div>
+                <p class="font-display text-base mb-xs">神秘暗黑</p>
+                <p class="text-xs text-muted-foreground">Dark Mystic · 深邃仪式感</p>
+                <span class="mt-sm inline-block text-xs text-primary">✓ 已选中</span>
+              </button>
+
+              <button class="theme-card group rounded-md border-2 border-transparent p-md text-left transition hover:border-primary/40" data-theme-id="minimal">
+                <div class="h-24 rounded-md mb-md relative overflow-hidden border border-black/10" style="background:#faf8f4;">
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-10 h-10 rounded-full border-2 border-[#2a2a2a] flex items-center justify-center">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#2a2a2a]"></span>
+                    </div>
+                  </div>
+                </div>
+                <p class="font-display text-base mb-xs">现代极简</p>
+                <p class="text-xs text-muted-foreground">Modern Minimalist · 清新留白</p>
+              </button>
+
+              <button class="theme-card group rounded-md border-2 border-transparent p-md text-left transition hover:border-primary/40" data-theme-id="nature">
+                <div class="h-24 rounded-md mb-md relative overflow-hidden" style="background:linear-gradient(135deg,#f4ecd8 0%,#e8d9b8 100%);">
+                  <div class="absolute -top-3 -right-3 w-20 h-20 rounded-full" style="background:radial-gradient(circle,rgba(212,165,116,0.5) 0%,transparent 60%);"></div>
+                  <span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#b56b4a;font-family:'Fraunces',serif;font-size:24px;">❋</span>
+                </div>
+                <p class="font-display text-base mb-xs">疗愈自然</p>
+                <p class="text-xs text-muted-foreground">Healing Nature · 温暖陪伴</p>
+              </button>
+            </div>
+          </section>
+
+          <!-- 其他设置（精简展示） -->
+          <section class="rounded-lg border border-border bg-card text-card-foreground p-lg shadow-sm mb-md">
+            <h2 class="font-display text-xl mb-md">偏好</h2>
+            <div class="divide-y divide-border">
+              <div class="flex items-center justify-between py-md">
+                <div>
+                  <p class="text-sm font-medium">动画效果</p>
+                  <p class="text-xs text-muted-foreground">启用沉浸式粒子与星空背景</p>
+                </div>
+                <button class="relative w-11 h-6 rounded-full bg-primary transition" role="switch" aria-checked="true">
+                  <span class="absolute left-[22px] top-[2px] w-5 h-5 rounded-full bg-white shadow transition"></span>
+                </button>
+              </div>
+              <div class="flex items-center justify-between py-md">
+                <div>
+                  <p class="text-sm font-medium">声音反馈</p>
+                  <p class="text-xs text-muted-foreground">洗牌、翻牌等关键操作的音效</p>
+                </div>
+                <button class="relative w-11 h-6 rounded-full bg-muted transition" role="switch" aria-checked="false">
+                  <span class="absolute left-[2px] top-[2px] w-5 h-5 rounded-full bg-white shadow transition"></span>
+                </button>
+              </div>
+              <div class="flex items-center justify-between py-md">
+                <div>
+                  <p class="text-sm font-medium">触感反馈（移动端）</p>
+                  <p class="text-xs text-muted-foreground">关键操作时的震动</p>
+                </div>
+                <button class="relative w-11 h-6 rounded-full bg-primary transition" role="switch" aria-checked="true">
+                  <span class="absolute left-[22px] top-[2px] w-5 h-5 rounded-full bg-white shadow transition"></span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 关于 -->
+          <section class="rounded-lg border border-border bg-card text-card-foreground p-lg shadow-sm">
+            <h2 class="font-display text-xl mb-md">关于</h2>
+            <p class="text-sm text-muted-foreground mb-sm">Lumina Tarot · v0.1.0</p>
+            <p class="text-xs text-muted-foreground">完全离线 · 无广告 · 无数据追踪</p>
+          </section>
+        </div>
+      </section>
+
+      <!-- ============ Token 色卡 Tokens ============ -->
+      <section data-page="tokens" class="animate-fadeIn">
+        <div class="mb-xl">
+          <h1 class="font-display text-3xl mb-sm">设计 Token 色卡</h1>
+          <p class="text-muted-foreground">当前主题的 shadcn-vue 兼容 Token。</p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-md" id="tokenGrid"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ============ 手机模式：三主题并排 ============ -->
+  <div id="deviceStage" class="hidden fixed inset-0 z-[100] bg-background/95 backdrop-blur overflow-auto">
+    <div class="sticky top-0 border-b border-border bg-background/90 backdrop-blur px-md py-sm flex items-center justify-between z-10">
+      <p class="text-sm font-medium" id="deviceStageTitle">手机预览</p>
+      <button id="deviceStageClose" class="text-sm px-md py-sm rounded-md border border-border hover:bg-muted transition">关闭</button>
+    </div>
+    <div class="p-lg" id="deviceStageContent"></div>
+  </div>
+
+  <footer class="mt-2xl border-t border-border py-lg text-center text-xs text-muted-foreground">
+    <p>Lumina Tarot · 2026-04-24 · Tailwind CDN + shadcn-vue 风格</p>
+    <p class="mt-xs">按 <kbd class="px-xs py-[1px] rounded border border-border">T</kbd> 循环切换主题 · 按 <kbd class="px-xs py-[1px] rounded border border-border">←</kbd> / <kbd class="px-xs py-[1px] rounded border border-border">→</kbd> 切换页面</p>
+  </footer>
+
+  <script>
+    (function () {
+      const THEMES = ['mystic', 'minimal', 'nature'];
+      const PAGES = ['splash', 'home', 'spread', 'question', 'shuffle', 'reveal', 'reading', 'library', 'card-detail', 'history', 'settings', 'tokens'];
+
+      /* ============ 主题切换 ============ */
+      const themeChips = document.querySelectorAll('.theme-chip');
+      const themeCards = document.querySelectorAll('.theme-card');
+
+      function applyTheme(id) {
+        const doSet = () => {
+          document.documentElement.dataset.theme = id;
+          themeChips.forEach((c) => c.classList.toggle('is-active', c.dataset.themeId === id));
+          themeCards.forEach((c) => {
+            const active = c.dataset.themeId === id;
+            c.classList.toggle('border-primary', active);
+            c.classList.toggle('border-transparent', !active);
+          });
+          try { localStorage.setItem('lumina-theme', id); } catch (e) {}
+          renderTokens();
+          if (document.getElementById('deviceStage') && !document.getElementById('deviceStage').classList.contains('hidden')) {
+            renderDeviceStage(currentDevice);
+          }
+        };
+        if (typeof document.startViewTransition === 'function') {
+          document.startViewTransition(doSet);
+        } else {
+          doSet();
+        }
+      }
+
+      themeChips.forEach((c) => c.addEventListener('click', () => applyTheme(c.dataset.themeId)));
+      themeCards.forEach((c) => c.addEventListener('click', () => applyTheme(c.dataset.themeId)));
+
+      /* ============ 页面切换 ============ */
+      const pageNavs = document.querySelectorAll('.page-nav');
+      const pageSections = document.querySelectorAll('[data-page]');
+
+      function showPage(id) {
+        if (!PAGES.includes(id)) return;
+        pageSections.forEach((s) => s.classList.toggle('is-active', s.dataset.page === id));
+        pageNavs.forEach((n) => {
+          const active = n.dataset.pageLink === id;
+          n.classList.toggle('is-active', active);
+          n.classList.toggle('bg-primary', active);
+          n.classList.toggle('text-primary-foreground', active);
+          n.classList.toggle('hover:bg-muted', !active);
+        });
+        try { localStorage.setItem('lumina-page', id); } catch (e) {}
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      pageNavs.forEach((n) => n.addEventListener('click', () => showPage(n.dataset.pageLink)));
+
+      /* ============ 设备模式 ============ */
+      const deviceChips = document.querySelectorAll('.device-chip');
+      const deviceStage = document.getElementById('deviceStage');
+      const deviceStageContent = document.getElementById('deviceStageContent');
+      const deviceStageTitle = document.getElementById('deviceStageTitle');
+      const deviceStageClose = document.getElementById('deviceStageClose');
+      let currentDevice = 'desktop';
+
+      function getCurrentPageSection() {
+        const active = document.querySelector('[data-page].is-active');
+        return active ? active.outerHTML : '';
+      }
+
+      function renderDeviceStage(mode) {
+        if (mode === 'desktop') {
+          deviceStage.classList.add('hidden');
+          return;
+        }
+        deviceStage.classList.remove('hidden');
+
+        if (mode === 'phone') {
+          deviceStageTitle.textContent = '手机预览 · 375×812';
+          const pageHTML = getCurrentPageSection();
+          deviceStageContent.innerHTML = `
+            <div class="flex justify-center">
+              <div class="phone-frame">
+                <div class="phone-screen p-md">${pageHTML}</div>
+              </div>
+            </div>
+          `;
+        } else if (mode === 'compare') {
+          deviceStageTitle.textContent = '三主题对比 · 同一页面并排';
+          const pageHTML = getCurrentPageSection();
+          deviceStageContent.innerHTML = `
+            <div class="grid md:grid-cols-3 gap-lg">
+              ${['mystic', 'minimal', 'nature']
+                .map((t) => `
+                  <div>
+                    <p class="text-center text-sm font-medium mb-sm">${
+                      t === 'mystic' ? '神秘暗黑' : t === 'minimal' ? '现代极简' : '疗愈自然'
+                    }</p>
+                    <div data-theme="${t}" class="rounded-lg border border-border overflow-hidden shadow-md" style="background:hsl(var(--background))">
+                      <div class="p-md">${pageHTML}</div>
+                    </div>
+                  </div>
+                `)
+                .join('')}
+            </div>
+          `;
+        }
+      }
+
+      deviceChips.forEach((c) => {
+        c.addEventListener('click', () => {
+          deviceChips.forEach((x) => x.classList.remove('is-active', 'bg-primary', 'text-primary-foreground'));
+          c.classList.add('is-active', 'bg-primary', 'text-primary-foreground');
+          currentDevice = c.dataset.device;
+          renderDeviceStage(currentDevice);
+        });
+      });
+      deviceStageClose.addEventListener('click', () => {
+        deviceStage.classList.add('hidden');
+        const desktop = document.querySelector('.device-chip[data-device="desktop"]');
+        deviceChips.forEach((x) => x.classList.remove('is-active', 'bg-primary', 'text-primary-foreground'));
+        desktop.classList.add('is-active');
+        currentDevice = 'desktop';
+      });
+
+      /* ============ Token 色卡 ============ */
+      const TOKEN_GROUPS = [
+        { key: '--background', label: 'background' },
+        { key: '--foreground', label: 'foreground' },
+        { key: '--card', label: 'card' },
+        { key: '--card-foreground', label: 'card-foreground' },
+        { key: '--primary', label: 'primary' },
+        { key: '--primary-foreground', label: 'primary-foreground' },
+        { key: '--secondary', label: 'secondary' },
+        { key: '--secondary-foreground', label: 'secondary-foreground' },
+        { key: '--muted', label: 'muted' },
+        { key: '--muted-foreground', label: 'muted-foreground' },
+        { key: '--accent', label: 'accent' },
+        { key: '--accent-foreground', label: 'accent-foreground' },
+        { key: '--destructive', label: 'destructive' },
+        { key: '--border', label: 'border' },
+        { key: '--input', label: 'input' },
+        { key: '--ring', label: 'ring' },
+      ];
+
+      function renderTokens() {
+        const grid = document.getElementById('tokenGrid');
+        if (!grid) return;
+        const cs = getComputedStyle(document.documentElement);
+        grid.innerHTML = TOKEN_GROUPS.map((t) => {
+          const val = cs.getPropertyValue(t.key).trim();
+          return `
+            <div class="rounded-md border border-border bg-card p-md">
+              <div class="h-12 rounded-sm mb-sm border border-border" style="background:hsl(${val})"></div>
+              <p class="text-sm font-medium">${t.label}</p>
+              <p class="text-xs text-muted-foreground font-mono">${t.key}</p>
+              <p class="text-xs text-muted-foreground font-mono mt-xs">hsl(${val})</p>
+            </div>
+          `;
+        }).join('');
+      }
+
+      /* ============ 键盘快捷键 ============ */
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 't' || e.key === 'T') {
+          const cur = document.documentElement.dataset.theme;
+          const idx = THEMES.indexOf(cur);
+          applyTheme(THEMES[(idx + 1) % THEMES.length]);
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          const cur = document.querySelector('[data-page].is-active')?.dataset.page || 'home';
+          const idx = PAGES.indexOf(cur);
+          const delta = e.key === 'ArrowRight' ? 1 : -1;
+          showPage(PAGES[(idx + delta + PAGES.length) % PAGES.length]);
+        }
+      });
+
+      /* ============ 初始化 ============ */
+      try {
+        const savedTheme = localStorage.getItem('lumina-theme');
+        applyTheme(THEMES.includes(savedTheme) ? savedTheme : 'mystic');
+
+        const savedPage = localStorage.getItem('lumina-page');
+        showPage(PAGES.includes(savedPage) ? savedPage : 'home');
+      } catch (e) {
+        applyTheme('mystic');
+        showPage('home');
+      }
+    })();
+  </script>
+</body>
+</html>
