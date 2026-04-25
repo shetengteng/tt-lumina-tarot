@@ -103,8 +103,8 @@ const slots = computed<Slot[]>(() => LAYOUTS[props.rank] ?? LAYOUTS.ace);
 const COURT_RANKS: CardRank[] = ['page', 'knight', 'queen', 'king'];
 const isCourt = computed(() => COURT_RANKS.includes(props.rank));
 
-// Suit symbols (Symbol style) — each renders as a recognizable mini-icon centered at (x, y), scale 1 = ~8 units wide.
-// Suit primitives (Geometric style) — pure shapes corresponding to elemental archetype.
+// 符号风格（symbol）：每个花色画成可识别的小图标，以 (x, y) 为中心，scale=1 约 8 个 SVG 单位宽
+// 几何风格（geometric）：纯几何形状，对应火 / 水 / 风 / 土 四元素的本源
 </script>
 
 <template>
@@ -115,26 +115,26 @@ const isCourt = computed(() => COURT_RANKS.includes(props.rank));
     xmlns="http://www.w3.org/2000/svg"
     aria-hidden="true"
   >
-    <!-- Court frame: top arc indicates royal status, with crown/halo per role -->
+    <!-- 宫廷框：顶部弧线代表王权身份，根据角色配以王冠 / 光环 -->
     <g v-if="isCourt" class="court-frame">
       <path d="M22 32 Q50 14 78 32" fill="none" stroke="currentColor" stroke-width="0.6" opacity="0.55" />
-      <!-- Page: small upward triangle (messenger) -->
+      <!-- Page 侍从：朝上的小三角，象征信使 -->
       <template v-if="rank === 'page'">
         <path d="M46 22 L50 14 L54 22 Z" fill="currentColor" opacity="0.85" />
         <circle cx="50" cy="14" r="1" fill="currentColor" opacity="0.9" />
       </template>
-      <!-- Knight: chevron with diagonal stroke (movement) -->
+      <!-- Knight 骑士：人字形 + 斜笔触，象征运动 -->
       <template v-else-if="rank === 'knight'">
         <path d="M40 22 L50 12 L60 22" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.85" />
         <line x1="58" y1="14" x2="68" y2="8" stroke="currentColor" stroke-width="0.8" opacity="0.7" />
       </template>
-      <!-- Queen: half moon crown -->
+      <!-- Queen 王后：半月形王冠 -->
       <template v-else-if="rank === 'queen'">
         <path d="M40 22 Q50 8 60 22" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.85" />
         <circle cx="50" cy="14" r="2" fill="none" stroke="currentColor" stroke-width="0.7" opacity="0.8" />
         <circle cx="50" cy="14" r="0.7" fill="currentColor" />
       </template>
-      <!-- King: full crown with three peaks -->
+      <!-- King 国王：三尖完整王冠 -->
       <template v-else-if="rank === 'king'">
         <path
           d="M38 24 L40 14 L46 22 L50 10 L54 22 L60 14 L62 24 Z"
@@ -149,9 +149,9 @@ const isCourt = computed(() => COURT_RANKS.includes(props.rank));
       </template>
     </g>
 
-    <!-- =================== SYMBOL STYLE =================== -->
+    <!-- =================== 符号风格 =================== -->
     <g v-if="props.style === 'symbol'">
-      <!-- Wand: vertical staff with a small flame on top -->
+      <!-- 权杖：竖直法杖，顶部小火苗 -->
       <template v-if="suit === 'wands'">
         <g v-for="(s, i) in slots" :key="`w-${i}`" :transform="`translate(${s.x}, ${s.y}) scale(${s.scale ?? 1})`">
           <line x1="0" y1="-6" x2="0" y2="6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
@@ -165,7 +165,7 @@ const isCourt = computed(() => COURT_RANKS.includes(props.rank));
         </g>
       </template>
 
-      <!-- Cup: U-shape on a stem, arched rim with light highlight -->
+      <!-- 圣杯：U 形杯身搭杯柄，杯口弧形带轻微高光 -->
       <template v-else-if="suit === 'cups'">
         <g v-for="(s, i) in slots" :key="`c-${i}`" :transform="`translate(${s.x}, ${s.y}) scale(${s.scale ?? 1})`">
           <path
@@ -187,7 +187,7 @@ const isCourt = computed(() => COURT_RANKS.includes(props.rank));
         </g>
       </template>
 
-      <!-- Sword: blade pointing up, crossguard, pommel -->
+      <!-- 宝剑：剑尖朝上，配护手与剑柄首 -->
       <template v-else-if="suit === 'swords'">
         <g v-for="(s, i) in slots" :key="`sw-${i}`" :transform="`translate(${s.x}, ${s.y}) scale(${s.scale ?? 1})`">
           <path d="M0 -8 L1.1 5 L-1.1 5 Z" fill="currentColor" opacity="0.9" />
@@ -197,7 +197,7 @@ const isCourt = computed(() => COURT_RANKS.includes(props.rank));
         </g>
       </template>
 
-      <!-- Pentacle: ring with inscribed pentagram -->
+      <!-- 钱币：圆环内嵌五芒星 -->
       <template v-else-if="suit === 'pentacles'">
         <g v-for="(s, i) in slots" :key="`p-${i}`" :transform="`translate(${s.x}, ${s.y}) scale(${s.scale ?? 1})`">
           <circle cx="0" cy="0" r="4.2" fill="none" stroke="currentColor" stroke-width="1.1" />
@@ -211,9 +211,9 @@ const isCourt = computed(() => COURT_RANKS.includes(props.rank));
       </template>
     </g>
 
-    <!-- =================== GEOMETRIC STYLE =================== -->
+    <!-- =================== 几何风格 =================== -->
     <g v-else>
-      <!-- Wand → vertical bar (line of fire) -->
+      <!-- 权杖 → 竖向条形（火焰之线） -->
       <template v-if="suit === 'wands'">
         <g v-for="(s, i) in slots" :key="`gw-${i}`" :transform="`translate(${s.x}, ${s.y}) scale(${s.scale ?? 1})`">
           <rect x="-0.9" y="-6.5" width="1.8" height="13" rx="0.5" fill="currentColor" opacity="0.9" />
@@ -221,7 +221,7 @@ const isCourt = computed(() => COURT_RANKS.includes(props.rank));
         </g>
       </template>
 
-      <!-- Cup → ring with inner droplet (containing water) -->
+      <!-- 圣杯 → 圆环内含水滴（容纳之水） -->
       <template v-else-if="suit === 'cups'">
         <g v-for="(s, i) in slots" :key="`gc-${i}`" :transform="`translate(${s.x}, ${s.y}) scale(${s.scale ?? 1})`">
           <circle cx="0" cy="0" r="4.2" fill="none" stroke="currentColor" stroke-width="1.2" />
@@ -229,7 +229,7 @@ const isCourt = computed(() => COURT_RANKS.includes(props.rank));
         </g>
       </template>
 
-      <!-- Sword → upward triangle (sharp thought) -->
+      <!-- 宝剑 → 向上三角（锋利思维） -->
       <template v-else-if="suit === 'swords'">
         <g v-for="(s, i) in slots" :key="`gsw-${i}`" :transform="`translate(${s.x}, ${s.y}) scale(${s.scale ?? 1})`">
           <path d="M0 -5.5 L4.5 4.2 L-4.5 4.2 Z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" />
@@ -237,7 +237,7 @@ const isCourt = computed(() => COURT_RANKS.includes(props.rank));
         </g>
       </template>
 
-      <!-- Pentacle → diamond / square rotated 45° (grounded matter) -->
+      <!-- 钱币 → 菱形 / 旋转 45° 的方形（落地的物质） -->
       <template v-else-if="suit === 'pentacles'">
         <g v-for="(s, i) in slots" :key="`gp-${i}`" :transform="`translate(${s.x}, ${s.y}) scale(${s.scale ?? 1})`">
           <rect

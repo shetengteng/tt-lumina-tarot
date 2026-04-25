@@ -48,7 +48,11 @@ const CARD_BACK_OPTIONS: Array<{ id: CardBackVariant; name: string; desc: string
   { id: 'eye',       name: '神秘之眼', desc: '杏核眼 · 十二放射' },
 ];
 
-const MINOR_STYLE_OPTIONS: Array<{ id: MinorIllustrationStyle; name: string; desc: string }> = [
+const MINOR_STYLE_OPTIONS: Array<{
+  id: MinorIllustrationStyle;
+  name: string;
+  desc: string;
+}> = [
   {
     id: 'symbol',
     name: '符号系',
@@ -274,12 +278,12 @@ function exportJSON() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card v-if="cardArtTheme === 'minimal'">
         <CardContent class="space-y-md p-lg">
           <div class="space-y-xs">
             <Label>小阿卡那插画风格</Label>
             <p class="text-sm text-muted-foreground">
-              仅在「卡面主题 = 极简」时生效。影响 56 张小阿卡那（权杖 · 圣杯 · 宝剑 · 钱币）正面的中央插图。
+              影响 56 张小阿卡那（权杖 · 圣杯 · 宝剑 · 钱币）正面的中央插图。
             </p>
           </div>
           <div class="grid grid-cols-1 gap-sm sm:grid-cols-2">

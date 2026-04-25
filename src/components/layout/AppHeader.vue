@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import ThemePicker from './ThemePicker.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -52,9 +51,5 @@ function goBack() {
         {{ link.label }}
       </router-link>
     </nav>
-
-    <div class="ml-auto hidden md:ml-0 md:block">
-      <ThemePicker />
-    </div>
   </header>
 </template>
