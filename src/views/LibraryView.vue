@@ -6,12 +6,12 @@ import type { CardSuit } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import MinorIllustration from '@/components/tarot/MinorIllustration.vue';
+import CardArtwork from '@/components/tarot/CardArtwork.vue';
 import { useSettingsStore } from '@/stores/settings';
 import { ALL_CARDS, MAJOR_ARCANA, SUITS, getCardsBySuit } from '@/data/cards';
 
 const settings = useSettingsStore();
-const { minorStyle } = storeToRefs(settings);
+const { minorStyle, cardArtTheme } = storeToRefs(settings);
 
 type Tab = 'all' | 'major' | CardSuit;
 
@@ -129,15 +129,11 @@ function cornerLabel(c: typeof ALL_CARDS[number]) {
             <span>{{ cornerLabel(c) }}</span>
             <span class="font-display tracking-widest">{{ c.nameEn.toUpperCase() }}</span>
           </div>
-          <div class="flex aspect-[2/3] items-center justify-center rounded-md bg-muted/40 p-xs">
-            <template v-if="c.arcana === 'minor' && c.suit && c.rank">
-              <div class="library-minor-wrap">
-                <MinorIllustration :suit="c.suit" :rank="c.rank" :style="minorStyle" />
-              </div>
-            </template>
-            <template v-else>
-              <span class="text-[clamp(2rem,5vw,3.5rem)] text-primary">{{ c.symbol }}</span>
-            </template>
+          <div
+            class="flex aspect-[2/3] items-center justify-center overflow-hidden rounded-md bg-muted/40"
+            :class="cardArtTheme === 'minimal' ? 'p-xs' : 'p-0'"
+          >
+            <CardArtwork :card="c" :theme="cardArtTheme" :minor-style="minorStyle" />
           </div>
           <div class="font-display text-base">{{ c.name }}</div>
           <div class="flex flex-wrap gap-xs">
@@ -155,12 +151,3 @@ function cornerLabel(c: typeof ALL_CARDS[number]) {
   </section>
 </template>
 
-<style scoped>
-.library-minor-wrap {
-  width: 85%;
-  aspect-ratio: 100 / 130;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-</style>

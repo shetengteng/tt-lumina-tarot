@@ -4,6 +4,12 @@ export type CardBackVariant = 'classic' | 'celestial' | 'sacred' | 'floral' | 'e
 
 export type MinorIllustrationStyle = 'symbol' | 'geometric';
 
+export type CardArtTheme = 'minimal' | 'rws' | 'aquatic';
+
+export type EffectiveCardBack =
+  | { kind: 'svg'; variant: CardBackVariant }
+  | { kind: 'image'; src: string };
+
 export type Locale = 'zh-CN' | 'en-US';
 
 export type AnimationLevel = 'off' | 'lite' | 'full';

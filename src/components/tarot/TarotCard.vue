@@ -5,7 +5,7 @@ import type { TarotCardDef, CardRank } from '@/types';
 import { cn } from '@/lib/utils';
 import { useSettingsStore } from '@/stores/settings';
 import CardBackPattern from './CardBackPattern.vue';
-import MinorIllustration from './MinorIllustration.vue';
+import CardArtwork from './CardArtwork.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -20,7 +20,9 @@ const props = withDefaults(
 );
 
 const settings = useSettingsStore();
-const { cardBack, minorStyle } = storeToRefs(settings);
+const { effectiveCardBack, minorStyle, cardArtTheme } = storeToRefs(settings);
+
+const useImageArt = computed(() => cardArtTheme.value !== 'minimal');
 
 const emit = defineEmits<{
   (e: 'flip'): void;
@@ -78,35 +80,54 @@ function onClick() {
     @click="onClick"
   >
     <div class="relative h-full w-full transition-transform duration-700" style="transform-style: preserve-3d" :class="flipped ? 'is-flipped' : ''">
-      <div class="card-face card-back absolute inset-0 flex items-center justify-center">
-        <CardBackPattern :variant="cardBack" />
+      <div class="card-face card-back absolute inset-0 flex items-center justify-center overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+        <template v-if="effectiveCardBack.kind === 'image'">
+          <img
+            class="card-back-img"
+            :src="effectiveCardBack.src"
+            alt=""
+            decoding="async"
+            aria-hidden="true"
+          />
+        </template>
+        <template v-else>
+          <CardBackPattern :variant="effectiveCardBack.variant" />
+        </template>
       </div>
 
-      <div class="card-face card-front absolute inset-0 flex flex-col overflow-hidden rounded-lg border border-border bg-card p-md text-card-foreground shadow-sm">
-        <div class="flex items-start justify-between text-[0.65rem] uppercase tracking-widest text-muted-foreground">
-          <span>{{ cornerLabel }}</span>
-          <span v-if="reversed" class="text-destructive">REV</span>
-        </div>
-
-        <div class="flex flex-1 items-center justify-center py-xs">
-          <template v-if="card && card.arcana === 'minor' && card.suit && card.rank">
-            <div class="minor-wrap" :class="[reversed ? 'rotate-180' : '']">
-              <MinorIllustration :suit="card.suit" :rank="card.rank" :style="minorStyle" />
-            </div>
-          </template>
-          <template v-else>
-            <span class="select-none text-[clamp(2.4rem,5vw,3.2rem)] leading-none" :class="[reversed ? 'rotate-180' : '']">
-              {{ card?.symbol ?? '?' }}
-            </span>
-          </template>
-        </div>
-
-        <div class="text-center">
-          <div class="font-display text-[0.85em] leading-tight">{{ card?.name ?? '未揭示' }}</div>
-          <div class="mt-0.5 text-[0.7em] tracking-widest text-muted-foreground">
-            {{ card?.nameEn ?? 'HIDDEN' }}
+      <div
+        class="card-face card-front absolute inset-0 flex flex-col overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-sm"
+        :class="useImageArt && card ? 'p-0' : 'p-md'"
+      >
+        <template v-if="useImageArt && card">
+          <div class="flex h-full w-full items-center justify-center" :class="[reversed ? 'rotate-180' : '']">
+            <CardArtwork :card="card" :theme="cardArtTheme" :minor-style="minorStyle" />
           </div>
-        </div>
+          <span
+            v-if="reversed"
+            class="absolute right-1.5 top-1.5 rounded-sm bg-destructive/85 px-1 py-px text-[0.6rem] font-semibold uppercase leading-none text-white shadow"
+          >REV</span>
+        </template>
+        <template v-else>
+          <div class="flex items-start justify-between text-[0.65rem] uppercase tracking-widest text-muted-foreground">
+            <span>{{ cornerLabel }}</span>
+            <span v-if="reversed" class="text-destructive">REV</span>
+          </div>
+          <div class="flex flex-1 items-center justify-center py-xs" :class="[reversed ? 'rotate-180' : '']">
+            <template v-if="card">
+              <CardArtwork :card="card" :theme="cardArtTheme" :minor-style="minorStyle" />
+            </template>
+            <template v-else>
+              <span class="select-none text-[clamp(2.4rem,5vw,3.2rem)] leading-none">?</span>
+            </template>
+          </div>
+          <div class="text-center">
+            <div class="font-display text-[0.85em] leading-tight">{{ card?.name ?? '未揭示' }}</div>
+            <div class="mt-0.5 text-[0.7em] tracking-widest text-muted-foreground">
+              {{ card?.nameEn ?? 'HIDDEN' }}
+            </div>
+          </div>
+        </template>
       </div>
     </div>
   </button>
@@ -140,11 +161,11 @@ function onClick() {
 .is-flipped {
   transform: rotateY(180deg);
 }
-.minor-wrap {
-  width: 80%;
-  aspect-ratio: 100 / 130;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.card-back-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: inherit;
 }
 </style>

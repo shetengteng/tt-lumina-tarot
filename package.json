@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "type-check": "vue-tsc --noEmit",
     "icons:gen": "node scripts/generate-pwa-icons.mjs",
-    "verify:pwa": "node scripts/verify-pwa.mjs"
+    "verify:pwa": "node scripts/verify-pwa.mjs",
+    "decks:download": "node scripts/download-decks.mjs"
   },
   "dependencies": {
     "@vueuse/core": "^11.3.0",

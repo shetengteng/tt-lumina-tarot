@@ -10,10 +10,15 @@ import CardBackPattern from '@/components/tarot/CardBackPattern.vue';
 import MinorIllustration from '@/components/tarot/MinorIllustration.vue';
 import { useSettingsStore } from '@/stores/settings';
 import { useReadingStore } from '@/stores/reading';
-import type { CardBackVariant, MinorIllustrationStyle, CardSuit } from '@/types';
+import type {
+  CardBackVariant,
+  MinorIllustrationStyle,
+  CardSuit,
+  CardArtTheme,
+} from '@/types';
 
 const settings = useSettingsStore();
-const { reducedMotion, theme, cardBack, minorStyle } = storeToRefs(settings);
+const { reducedMotion, theme, cardBack, minorStyle, cardArtTheme } = storeToRefs(settings);
 const readingStore = useReadingStore();
 
 const CARD_BACK_OPTIONS: Array<{ id: CardBackVariant; name: string; desc: string }> = [
@@ -38,6 +43,35 @@ const MINOR_STYLE_OPTIONS: Array<{ id: MinorIllustrationStyle; name: string; des
 ];
 
 const PREVIEW_SUITS: CardSuit[] = ['wands', 'cups', 'swords', 'pentacles'];
+
+const CARD_ART_THEME_OPTIONS: Array<{
+  id: CardArtTheme;
+  name: string;
+  desc: string;
+  badge?: string;
+  preview: string;
+}> = [
+  {
+    id: 'minimal',
+    name: '极简',
+    desc: '使用站内 SVG 插画 · 无外部图片 · 加载最快',
+    preview: '/img/card-theme-preview-minimal.webp',
+  },
+  {
+    id: 'rws',
+    name: '经典韦特',
+    desc: '矢量化 Rider-Waite-Smith · 公有领域',
+    badge: 'Wikimedia · CC0',
+    preview: '/decks/rws/fool.webp',
+  },
+  {
+    id: 'aquatic',
+    name: '水彩重绘',
+    desc: 'Andreas Schröter 水彩版 · 仅限非商业使用',
+    badge: 'CC BY-NC-SA 3.0',
+    preview: '/decks/aquatic/fool.webp',
+  },
+];
 
 function clearData() {
   if (typeof window !== 'undefined' && !window.confirm('将清空所有占卜历史与当前进行中的占卜，确定吗？')) return;
@@ -82,12 +116,12 @@ function exportJSON() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card v-if="cardArtTheme === 'minimal'">
         <CardContent class="space-y-md p-lg">
           <div class="space-y-xs">
             <Label>牌背图案</Label>
             <p class="text-sm text-muted-foreground">
-              洗牌、牌阵、占卜结果中所有未翻面的牌都会使用此图案。
+              洗牌、牌阵、占卜结果中所有未翻面的牌都会使用此图案。仅在「卡面主题 = 极简」时可自由选择。
             </p>
           </div>
           <div class="grid grid-cols-2 gap-sm sm:grid-cols-3">
@@ -126,9 +160,77 @@ function exportJSON() {
       <Card>
         <CardContent class="space-y-md p-lg">
           <div class="space-y-xs">
+            <Label>卡面主题</Label>
+            <p class="text-sm text-muted-foreground">
+              切换 78 张牌正面的视觉风格。极简使用站内 SVG；其他主题使用本地图片资源。
+            </p>
+          </div>
+          <div class="grid grid-cols-1 gap-sm sm:grid-cols-3">
+            <button
+              v-for="opt in CARD_ART_THEME_OPTIONS"
+              :key="opt.id"
+              type="button"
+              :aria-pressed="cardArtTheme === opt.id"
+              class="card-art-option group relative flex flex-col gap-xs rounded-lg border p-sm text-left transition focus:outline-none"
+              :class="cardArtTheme === opt.id
+                ? 'border-primary bg-accent/40 shadow-[0_0_0_1px_hsl(var(--primary)/0.4)]'
+                : 'border-border/60 hover:border-primary/50 hover:bg-accent/30'"
+              @click="settings.setCardArtTheme(opt.id)"
+            >
+              <div class="art-preview relative mx-auto aspect-[5/9] w-[68px] overflow-hidden rounded-md border border-border/60 bg-card">
+                <img
+                  v-if="opt.id !== 'minimal'"
+                  :src="opt.preview"
+                  alt=""
+                  class="h-full w-full object-cover"
+                  decoding="async"
+                  loading="lazy"
+                />
+                <div v-else class="flex h-full w-full items-center justify-center text-2xl text-primary">
+                  ✦
+                </div>
+              </div>
+              <div>
+                <div class="text-sm font-medium text-foreground">{{ opt.name }}</div>
+                <div class="mt-0.5 text-[11px] leading-snug text-muted-foreground">{{ opt.desc }}</div>
+                <div
+                  v-if="opt.badge"
+                  class="mt-xs inline-block rounded border border-border/60 bg-muted/40 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground"
+                >
+                  {{ opt.badge }}
+                </div>
+              </div>
+              <span
+                v-if="cardArtTheme === opt.id"
+                class="absolute right-xs top-xs rounded-full bg-primary px-xs text-[10px] leading-4 text-primary-foreground"
+              >
+                ✓
+              </span>
+            </button>
+          </div>
+          <p
+            v-if="cardArtTheme !== 'minimal'"
+            class="rounded-md border border-border/60 bg-muted/30 p-sm text-[11px] leading-relaxed text-muted-foreground"
+          >
+            ℹ 已切换到图片主题。牌背会自动使用与该主题配套的封面，「牌背图案」选项暂时隐藏。
+            切回「极简」即可恢复 SVG 牌背的自由选择。
+          </p>
+          <p
+            v-if="cardArtTheme === 'aquatic'"
+            class="rounded-md border border-amber-500/30 bg-amber-500/10 p-sm text-[11px] leading-relaxed text-amber-700 dark:text-amber-400"
+          >
+            ⚠ Aquatic Tarot 由 Andreas Schröter 创作，授权为 <strong>CC BY-NC-SA 3.0</strong>，
+            仅限个人非商业用途。如需商业使用请改用「极简」或「经典韦特」。
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent class="space-y-md p-lg">
+          <div class="space-y-xs">
             <Label>小阿卡那插画风格</Label>
             <p class="text-sm text-muted-foreground">
-              影响 56 张小阿卡那（权杖 · 圣杯 · 宝剑 · 钱币）正面的中央插图。大阿卡那不受影响。
+              仅在「卡面主题 = 极简」时生效。影响 56 张小阿卡那（权杖 · 圣杯 · 宝剑 · 钱币）正面的中央插图。
             </p>
           </div>
           <div class="grid grid-cols-1 gap-sm sm:grid-cols-2">
@@ -207,9 +309,15 @@ function exportJSON() {
       <Card>
         <CardContent class="space-y-xs p-lg">
           <Label>关于</Label>
-          <p class="text-sm text-muted-foreground">
-            Lumina Tarot · v0.1 · 离线塔罗牌占卜 Web App。
-            Vue 3 · Vite · TypeScript · Tailwind · shadcn-vue。
+          <p class="text-sm leading-relaxed text-muted-foreground">
+            Lumina Tarot 是一座属于你自己的安静牌桌——
+            <span class="text-foreground/85">无需登录，无需联网</span>，所有问题与记录都只留在你的设备里。
+          </p>
+          <p class="text-sm leading-relaxed text-muted-foreground">
+            愿每一次抽牌，都成为与自己相处的小小仪式。
+          </p>
+          <p class="pt-xs text-[11px] uppercase tracking-[0.3em] text-muted-foreground/60">
+            Lumina Tarot · v0.1
           </p>
         </CardContent>
       </Card>

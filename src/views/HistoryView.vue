@@ -4,12 +4,41 @@ import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import CardArtwork from '@/components/tarot/CardArtwork.vue';
 import { useReadingStore } from '@/stores/reading';
 import { useSettingsStore } from '@/stores/settings';
 import { getSpreadById } from '@/data/spreads';
 import { getCardById } from '@/data/cards';
 import { formatRelative } from '@/lib/utils';
-import type { ReadingRecord } from '@/types';
+import type { CardRank, ReadingRecord } from '@/types';
+
+const RANK_LABEL: Record<CardRank, string> = {
+  ace: 'A',
+  '2': 'II',
+  '3': 'III',
+  '4': 'IV',
+  '5': 'V',
+  '6': 'VI',
+  '7': 'VII',
+  '8': 'VIII',
+  '9': 'IX',
+  '10': 'X',
+  page: 'P',
+  knight: 'Kn',
+  queen: 'Q',
+  king: 'K',
+};
+
+function cornerLabelOf(cardId: string): string {
+  const card = getCardById(cardId);
+  if (!card) return '?';
+  if (card.arcana === 'minor' && card.rank) return RANK_LABEL[card.rank];
+  return String(card.number).padStart(2, '0');
+}
+
+function openCard(cardId: string) {
+  router.push({ name: 'card-detail', params: { id: cardId } });
+}
 
 const router = useRouter();
 const readingStore = useReadingStore();
@@ -168,15 +197,61 @@ function exportJSON() {
           {{ summaryOf(r) }}
         </p>
 
-        <!-- 第四行：牌背缩略 + 操作 -->
+        <!-- 第四行：牌面缩略 + 操作 -->
         <div class="flex items-end justify-between gap-md">
           <div class="flex flex-wrap gap-xs">
-            <div
+            <button
               v-for="c in r.cards"
               :key="c.cardId + c.positionIndex"
-              class="card-back h-12 w-8 rounded-sm shadow-sm"
-              :aria-label="`第 ${c.positionIndex + 1} 张`"
-            />
+              type="button"
+              class="thumb-card group relative flex h-[112px] w-[72px] flex-col items-center justify-between overflow-hidden rounded-md border border-primary/30 bg-gradient-to-b from-background/40 to-card text-card-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-primary/70 hover:shadow-[0_6px_18px_hsl(var(--primary)/0.25)]"
+              :class="settings.cardArtTheme === 'minimal' ? 'p-1.5' : 'p-0'"
+              :title="(getCardById(c.cardId)?.name ?? '?') + (c.reversed ? ' · 逆位' : ' · 正位')"
+              :aria-label="`查看 ${getCardById(c.cardId)?.name ?? '未知'}${c.reversed ? ' 逆位' : ''}`"
+              @click="openCard(c.cardId)"
+            >
+              <template v-if="settings.cardArtTheme !== 'minimal' && getCardById(c.cardId)">
+                <span class="thumb-img-wrap" :class="c.reversed && 'rotate-180'">
+                  <CardArtwork
+                    :card="getCardById(c.cardId)!"
+                    :theme="settings.cardArtTheme"
+                    :minor-style="settings.minorStyle"
+                    lazy
+                  />
+                </span>
+                <span
+                  v-if="c.reversed"
+                  class="absolute right-1 top-1 rounded-sm bg-destructive/90 px-1 py-px text-[8px] font-semibold uppercase leading-none text-white shadow"
+                >R</span>
+              </template>
+              <template v-else>
+                <span class="self-start font-display text-[9px] font-semibold uppercase leading-none tracking-widest text-primary/80">
+                  {{ cornerLabelOf(c.cardId) }}
+                </span>
+                <span
+                  class="thumb-art-wrap flex flex-1 items-center justify-center py-0.5"
+                  :class="c.reversed && 'rotate-180'"
+                >
+                  <template v-if="getCardById(c.cardId)">
+                    <span class="thumb-illustration-fallback block">
+                      <CardArtwork
+                        :card="getCardById(c.cardId)!"
+                        :theme="settings.cardArtTheme"
+                        :minor-style="settings.minorStyle"
+                        lazy
+                      />
+                    </span>
+                  </template>
+                </span>
+                <span class="self-stretch truncate text-center font-display text-[10px] leading-tight text-foreground/95">
+                  {{ getCardById(c.cardId)?.name ?? '?' }}
+                </span>
+                <span
+                  v-if="c.reversed"
+                  class="absolute right-1 top-1 rounded-sm bg-destructive/90 px-1 py-px text-[8px] font-semibold uppercase leading-none text-white shadow"
+                >R</span>
+              </template>
+            </button>
           </div>
           <Button
             variant="ghost"
@@ -199,3 +274,28 @@ function exportJSON() {
     </div>
   </section>
 </template>
+
+<style scoped>
+.thumb-art-wrap {
+  width: 100%;
+}
+.thumb-illustration-fallback {
+  width: 52px;
+  height: 67px;
+  line-height: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--primary));
+}
+.thumb-img-wrap {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: hidden;
+  border-radius: inherit;
+}
+.thumb-card {
+  cursor: pointer;
+}
+</style>

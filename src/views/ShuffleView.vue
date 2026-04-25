@@ -7,6 +7,7 @@ import { getSpreadById } from '@/data/spreads';
 import { drawCards } from '@/lib/tarot';
 import { sleep } from '@/lib/utils';
 import { useSettingsStore } from '@/stores/settings';
+import CardBackPattern from '@/components/tarot/CardBackPattern.vue';
 
 const HOLD_DURATION_MS = 3000;
 const REVEAL_LATENCY_MS = 450;
@@ -75,9 +76,10 @@ function stopLoop() {
 async function finishHold() {
   stopLoop();
   if (!spread.value || !readingStore.current) {
-    cancelHold();
+    router.replace({ name: 'spread' });
     return;
   }
+  if (phase.value === 'drawing' || phase.value === 'done') return;
   phase.value = 'drawing';
   progress.value = 100;
   await sleep(REVEAL_LATENCY_MS);
@@ -104,7 +106,7 @@ function onKeyUp(e: KeyboardEvent) {
 const hintText = computed(() => {
   switch (phase.value) {
     case 'idle':
-      return '长按此处 3 秒 开始洗牌';
+      return '长按上方牌堆 3 秒 · 或点击此圆圈直接洗牌';
     case 'holding':
       return progress.value >= 99 ? '洗牌完成 · 抽牌中…' : '保持专注，继续按住…';
     case 'drawing':
@@ -166,25 +168,42 @@ const isShuffling = computed(
         <div
           v-for="i in 5"
           :key="i"
-          class="card-back shuffle-card absolute left-1/2 top-1/2 h-[220px] w-[150px] -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-lg md:h-[260px] md:w-[170px]"
+          class="card-back shuffle-card absolute left-1/2 top-1/2 h-[220px] w-[150px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-lg border border-border bg-card shadow-lg md:h-[260px] md:w-[170px]"
           :class="isShuffling && 'is-shuffling'"
           :style="{ '--i': i }"
-        />
+        >
+          <template v-if="settings.effectiveCardBack.kind === 'image'">
+            <img
+              class="shuffle-back-img"
+              :src="settings.effectiveCardBack.src"
+              alt=""
+              decoding="async"
+              aria-hidden="true"
+            />
+          </template>
+          <template v-else>
+            <CardBackPattern :variant="settings.effectiveCardBack.variant" />
+          </template>
+        </div>
       </div>
     </div>
 
-    <!-- 长按指示圈 -->
+    <!-- 长按指示圈：同时支持单击直接洗牌 -->
     <div class="mb-lg flex items-center justify-center gap-md">
-      <div
-        class="relative flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary/40 md:h-14 md:w-14"
+      <button
+        type="button"
+        :aria-label="phase === 'idle' ? '点击此处直接洗牌（或长按上方牌堆 3 秒）' : '正在洗牌'"
+        :disabled="phase !== 'idle'"
+        class="relative flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary/60 bg-background/40 outline-none transition hover:border-primary hover:bg-primary/10 hover:shadow-[0_0_18px_hsl(var(--primary)/0.45)] focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-default disabled:opacity-70 md:h-14 md:w-14"
         :class="phase === 'idle' && !settings.reducedMotion && 'animate-pulse'"
+        @click="finishHold"
       >
         <span
           aria-hidden="true"
           class="h-3 w-3 rounded-full bg-primary transition-transform md:h-4 md:w-4"
           :class="phase === 'holding' ? 'scale-125' : 'scale-100'"
         />
-      </div>
+      </button>
       <p class="text-sm text-muted-foreground">
         {{ hintText }}
       </p>
@@ -229,6 +248,13 @@ const isShuffling = computed(
 .shuffle-card.is-shuffling {
   animation: shuffle-dance 1.8s ease-in-out infinite;
   animation-delay: calc(var(--i) * 80ms);
+}
+.shuffle-back-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: inherit;
 }
 @keyframes shuffle-dance {
   0% {

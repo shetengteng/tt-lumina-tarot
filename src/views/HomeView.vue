@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useReadingStore } from '@/stores/reading';
@@ -73,25 +73,50 @@ function loadOrGenerateDaily() {
   }
 }
 
-type QuickDraw = { card: TarotCardDef; reversed: boolean; flipped: boolean };
+type QuickDraw = {
+  card: TarotCardDef;
+  reversed: boolean;
+  flipped: boolean;
+  revealed: boolean;
+};
 const quickDraw = ref<QuickDraw | null>(null);
 const drawing = ref(false);
+let revealTimer: ReturnType<typeof setTimeout> | null = null;
+let drawTimer: ReturnType<typeof setTimeout> | null = null;
+
+const FLIP_DURATION_MS = 700;
+const PRE_FLIP_DELAY_MS = 500;
 
 const heroFlipped = computed(() => !!quickDraw.value?.flipped);
 const heroHint = computed(() => {
   if (!quickDraw.value) return '点击开启 · DAILY DRAW';
   if (drawing.value) return '抽取中…';
   if (!quickDraw.value.flipped) return '正在翻面…';
+  if (!quickDraw.value.revealed) return '揭晓中…';
   return `${quickDraw.value.card.name} · ${quickDraw.value.reversed ? '逆位' : '正位'}`;
 });
 
+function clearTimers() {
+  if (revealTimer) {
+    clearTimeout(revealTimer);
+    revealTimer = null;
+  }
+  if (drawTimer) {
+    clearTimeout(drawTimer);
+    drawTimer = null;
+  }
+}
+
 function onHeroCardClick() {
   if (drawing.value) return;
-  if (!quickDraw.value || quickDraw.value.flipped) {
+  if (!quickDraw.value || quickDraw.value.revealed) {
     drawDaily();
     return;
   }
-  quickDraw.value.flipped = true;
+  if (!quickDraw.value.flipped) {
+    quickDraw.value.flipped = true;
+    scheduleReveal();
+  }
 }
 
 function scrollToHeroCard() {
@@ -100,24 +125,38 @@ function scrollToHeroCard() {
   }
   if (!quickDraw.value) {
     drawDaily();
-  } else if (quickDraw.value.flipped) {
+  } else if (quickDraw.value.revealed) {
     drawDaily();
   }
 }
 
+function scheduleReveal() {
+  if (revealTimer) clearTimeout(revealTimer);
+  revealTimer = setTimeout(() => {
+    if (quickDraw.value && quickDraw.value.flipped) {
+      quickDraw.value.revealed = true;
+    }
+    revealTimer = null;
+  }, FLIP_DURATION_MS);
+}
+
 async function drawDaily() {
+  clearTimers();
   drawing.value = true;
   const pool = shuffle(ALL_CARDS);
   const card = pool[0];
   const reversed = isReversed();
-  quickDraw.value = { card, reversed, flipped: false };
-  setTimeout(() => {
+  quickDraw.value = { card, reversed, flipped: false, revealed: false };
+  drawTimer = setTimeout(() => {
     if (quickDraw.value) quickDraw.value.flipped = true;
     drawing.value = false;
-  }, 500);
+    drawTimer = null;
+    scheduleReveal();
+  }, PRE_FLIP_DELAY_MS);
 }
 
 function closeDaily() {
+  clearTimers();
   quickDraw.value = null;
   drawing.value = false;
 }
@@ -144,6 +183,10 @@ const latestFirstCard = computed(() => {
 
 onMounted(() => {
   loadOrGenerateDaily();
+});
+
+onBeforeUnmount(() => {
+  clearTimers();
 });
 </script>
 
@@ -202,10 +245,10 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- 今日一牌 · 翻面后的文字结果 -->
+    <!-- 今日一牌 · 翻面后的文字结果（等翻面动画结束后再淡入） -->
     <transition name="fade">
       <div
-        v-if="quickDraw?.flipped"
+        v-if="quickDraw?.revealed"
         class="mx-auto mb-xl w-full max-w-xl rounded-lg border border-border/60 bg-card/70 p-lg shadow-sm backdrop-blur-sm"
       >
         <div class="flex items-center justify-between gap-sm">

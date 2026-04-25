@@ -1,6 +1,14 @@
 import { defineStore } from 'pinia';
-import { ref, watch } from 'vue';
-import type { ThemeId, CardBackVariant, MinorIllustrationStyle, Locale, AnimationLevel } from '@/types';
+import { computed, ref, watch } from 'vue';
+import type {
+  ThemeId,
+  CardBackVariant,
+  MinorIllustrationStyle,
+  Locale,
+  AnimationLevel,
+  CardArtTheme,
+  EffectiveCardBack,
+} from '@/types';
 import { initialLocale, setI18nLocale, SUPPORTED_LOCALES } from '@/i18n';
 
 const STORAGE_KEY = 'lumina-theme';
@@ -8,10 +16,12 @@ const REDUCED_MOTION_KEY = 'lumina-reduced-motion';
 const CARD_BACK_KEY = 'lumina-card-back';
 const MINOR_STYLE_KEY = 'lumina-minor-style';
 const ANIMATION_LEVEL_KEY = 'lumina-animation-level';
+const CARD_ART_THEME_KEY = 'lumina-card-art-theme';
 
 const VALID_CARD_BACKS: CardBackVariant[] = ['classic', 'celestial', 'sacred', 'floral', 'eye'];
 const VALID_MINOR_STYLES: MinorIllustrationStyle[] = ['symbol', 'geometric'];
 const VALID_ANIMATION_LEVELS: AnimationLevel[] = ['off', 'lite', 'full'];
+const VALID_CARD_ART_THEMES: CardArtTheme[] = ['minimal', 'rws', 'aquatic'];
 
 function readInitialTheme(): ThemeId {
   if (typeof window === 'undefined') return 'mystic';
@@ -38,6 +48,15 @@ function readInitialMinorStyle(): MinorIllustrationStyle {
   return 'symbol';
 }
 
+function readInitialCardArtTheme(): CardArtTheme {
+  if (typeof window === 'undefined') return 'minimal';
+  const saved = window.localStorage.getItem(CARD_ART_THEME_KEY);
+  if (saved && (VALID_CARD_ART_THEMES as string[]).includes(saved)) {
+    return saved as CardArtTheme;
+  }
+  return 'minimal';
+}
+
 function readInitialAnimationLevel(): AnimationLevel {
   if (typeof window === 'undefined') return 'full';
   const saved = window.localStorage.getItem(ANIMATION_LEVEL_KEY);
@@ -60,6 +79,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const theme = ref<ThemeId>(readInitialTheme());
   const cardBack = ref<CardBackVariant>(readInitialCardBack());
   const minorStyle = ref<MinorIllustrationStyle>(readInitialMinorStyle());
+  const cardArtTheme = ref<CardArtTheme>(readInitialCardArtTheme());
   const locale = ref<Locale>(initialLocale);
   const animationLevel = ref<AnimationLevel>(readInitialAnimationLevel());
   const reducedMotion = ref<boolean>(animationLevel.value === 'off');
@@ -83,6 +103,11 @@ export const useSettingsStore = defineStore('settings', () => {
   function applyMinorStyleToDOM(next: MinorIllustrationStyle) {
     if (typeof document === 'undefined') return;
     document.documentElement.dataset.minorStyle = next;
+  }
+
+  function applyCardArtThemeToDOM(next: CardArtTheme) {
+    if (typeof document === 'undefined') return;
+    document.documentElement.dataset.cardArtTheme = next;
   }
 
   function applyAnimationLevelToDOM(next: AnimationLevel) {
@@ -115,6 +140,22 @@ export const useSettingsStore = defineStore('settings', () => {
     if (next === minorStyle.value) return;
     minorStyle.value = next;
   }
+
+  function setCardArtTheme(next: CardArtTheme) {
+    if (!(VALID_CARD_ART_THEMES as string[]).includes(next)) return;
+    if (next === cardArtTheme.value) return;
+    cardArtTheme.value = next;
+  }
+
+  const effectiveCardBack = computed<EffectiveCardBack>(() => {
+    if (cardArtTheme.value === 'rws') {
+      return { kind: 'image', src: '/decks/rws/_back.webp' };
+    }
+    if (cardArtTheme.value === 'aquatic') {
+      return { kind: 'image', src: '/decks/aquatic/_back.webp' };
+    }
+    return { kind: 'svg', variant: cardBack.value };
+  });
 
   function setLocale(next: Locale) {
     if (!(SUPPORTED_LOCALES as string[]).includes(next)) return;
@@ -176,6 +217,16 @@ export const useSettingsStore = defineStore('settings', () => {
   );
 
   watch(
+    cardArtTheme,
+    (v) => {
+      if (typeof window === 'undefined') return;
+      window.localStorage.setItem(CARD_ART_THEME_KEY, v);
+      applyCardArtThemeToDOM(v);
+    },
+    { immediate: true }
+  );
+
+  watch(
     animationLevel,
     (v) => {
       if (typeof window === 'undefined') return;
@@ -190,11 +241,14 @@ export const useSettingsStore = defineStore('settings', () => {
     reducedMotion,
     cardBack,
     minorStyle,
+    cardArtTheme,
+    effectiveCardBack,
     locale,
     animationLevel,
     setTheme,
     setCardBack,
     setMinorStyle,
+    setCardArtTheme,
     setLocale,
     setAnimationLevel,
     toggleReducedMotion,
