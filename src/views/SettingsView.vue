@@ -3,7 +3,6 @@ import { storeToRefs } from 'pinia';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import ThemePicker from '@/components/layout/ThemePicker.vue';
 import CardBackPattern from '@/components/tarot/CardBackPattern.vue';
@@ -15,11 +14,31 @@ import type {
   MinorIllustrationStyle,
   CardSuit,
   CardArtTheme,
+  Locale,
+  AnimationLevel,
 } from '@/types';
 
 const settings = useSettingsStore();
-const { reducedMotion, theme, cardBack, minorStyle, cardArtTheme } = storeToRefs(settings);
+const {
+  theme,
+  cardBack,
+  minorStyle,
+  cardArtTheme,
+  locale,
+  animationLevel,
+} = storeToRefs(settings);
 const readingStore = useReadingStore();
+
+const LANGUAGE_OPTIONS: Array<{ id: Locale; name: string; sub: string }> = [
+  { id: 'zh-CN', name: '简体中文', sub: 'Chinese' },
+  { id: 'en-US', name: 'English',  sub: '英文' },
+];
+
+const ANIMATION_OPTIONS: Array<{ id: AnimationLevel; name: string; desc: string }> = [
+  { id: 'off',  name: '关闭', desc: '无粒子 · 无洗牌动画 · 适合低端机' },
+  { id: 'lite', name: '轻量', desc: '少量粒子 · 简化动画 · 平衡' },
+  { id: 'full', name: '完整', desc: '完整粒子 · 沉浸动画 · 旗舰体验' },
+];
 
 const CARD_BACK_OPTIONS: Array<{ id: CardBackVariant; name: string; desc: string }> = [
   { id: 'classic',   name: '经典',     desc: '双层圆环 · 八芒星' },
@@ -113,6 +132,36 @@ function exportJSON() {
           <p class="text-xs text-muted-foreground">
             当前：<span class="text-foreground">{{ { mystic: '神秘暗黑', minimal: '现代极简', nature: '疗愈自然' }[theme] }}</span>
           </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent class="space-y-md p-lg">
+          <div class="space-y-xs">
+            <Label>语言 / Language</Label>
+            <p class="text-sm text-muted-foreground">
+              切换界面语言与卡牌文案。占卜结果会按当前语言显示。
+            </p>
+          </div>
+          <div class="inline-flex items-center rounded-md border border-border/60 bg-card p-0.5">
+            <button
+              v-for="opt in LANGUAGE_OPTIONS"
+              :key="opt.id"
+              type="button"
+              :aria-pressed="locale === opt.id"
+              class="lang-segment relative rounded-sm px-md py-1.5 text-sm transition focus:outline-none"
+              :class="locale === opt.id
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'"
+              @click="settings.setLocale(opt.id)"
+            >
+              <span class="font-medium">{{ opt.name }}</span>
+              <span
+                v-if="locale !== opt.id"
+                class="ml-1 text-[10px] opacity-60"
+              >· {{ opt.sub }}</span>
+            </button>
+          </div>
         </CardContent>
       </Card>
 
@@ -274,19 +323,37 @@ function exportJSON() {
 
       <Card>
         <CardContent class="space-y-md p-lg">
-          <div class="flex items-start justify-between gap-md">
-            <div class="space-y-xs">
-              <Label for="reduced-motion">减弱动画</Label>
-              <p class="text-sm text-muted-foreground">
-                关闭背景粒子、流动雾气与洗牌动画，更适合低性能设备或晕动症用户。
-              </p>
-            </div>
-            <Switch
-              id="reduced-motion"
-              :checked="reducedMotion"
-              @update:checked="settings.toggleReducedMotion($event)"
-            />
+          <div class="space-y-xs">
+            <Label>动画强度</Label>
+            <p class="text-sm text-muted-foreground">
+              控制粒子背景、洗牌动画与界面过渡。低性能设备或晕动症用户建议选择「关闭」。
+            </p>
           </div>
+          <div class="grid grid-cols-3 gap-sm">
+            <button
+              v-for="opt in ANIMATION_OPTIONS"
+              :key="opt.id"
+              type="button"
+              :aria-pressed="animationLevel === opt.id"
+              class="anim-option group relative flex flex-col gap-xs rounded-lg border p-sm text-left transition focus:outline-none"
+              :class="animationLevel === opt.id
+                ? 'border-primary bg-accent/40 shadow-[0_0_0_1px_hsl(var(--primary)/0.4)]'
+                : 'border-border/60 hover:border-primary/50 hover:bg-accent/30'"
+              @click="settings.setAnimationLevel(opt.id)"
+            >
+              <div class="text-sm font-medium text-foreground">{{ opt.name }}</div>
+              <div class="text-[11px] leading-snug text-muted-foreground">{{ opt.desc }}</div>
+              <span
+                v-if="animationLevel === opt.id"
+                class="absolute right-xs top-xs rounded-full bg-primary px-xs text-[10px] leading-4 text-primary-foreground"
+              >
+                ✓
+              </span>
+            </button>
+          </div>
+          <p class="text-xs text-muted-foreground">
+            当前：<span class="text-foreground">{{ ANIMATION_OPTIONS.find(o => o.id === animationLevel)?.name }}</span>
+          </p>
         </CardContent>
       </Card>
 
