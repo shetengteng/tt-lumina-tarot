@@ -106,7 +106,7 @@ function onKeyUp(e: KeyboardEvent) {
 const hintText = computed(() => {
   switch (phase.value) {
     case 'idle':
-      return '长按上方牌堆 3 秒 · 或点击此圆圈直接洗牌';
+      return '长按上方牌堆或此圆圈 3 秒开始洗牌';
     case 'holding':
       return progress.value >= 99 ? '洗牌完成 · 抽牌中…' : '保持专注，继续按住…';
     case 'drawing':
@@ -148,7 +148,7 @@ const isShuffling = computed(
     </div>
 
     <!-- 长按触控区：牌堆扇形 -->
-    <div class="mb-xl flex justify-center">
+    <div class="relative z-0 mb-xl flex justify-center overflow-hidden">
       <div
         role="button"
         tabindex="0"
@@ -188,15 +188,23 @@ const isShuffling = computed(
       </div>
     </div>
 
-    <!-- 长按指示圈：同时支持单击直接洗牌 -->
-    <div class="mb-lg flex items-center justify-center gap-md">
+    <!-- 长按指示圈：长按 3 秒触发洗牌 -->
+    <div class="relative z-10 mb-lg flex items-center justify-center gap-md">
       <button
         type="button"
-        :aria-label="phase === 'idle' ? '点击此处直接洗牌（或长按上方牌堆 3 秒）' : '正在洗牌'"
-        :disabled="phase !== 'idle'"
-        class="relative flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary/60 bg-background/40 outline-none transition hover:border-primary hover:bg-primary/10 hover:shadow-[0_0_18px_hsl(var(--primary)/0.45)] focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-default disabled:opacity-70 md:h-14 md:w-14"
+        :aria-label="phase === 'idle' ? '长按此处 3 秒开始洗牌' : '正在洗牌'"
+        :aria-pressed="phase === 'holding'"
+        :disabled="phase === 'drawing' || phase === 'done'"
+        class="relative flex h-12 w-12 cursor-pointer select-none items-center justify-center rounded-full border-2 border-primary/60 bg-background/40 outline-none transition touch-none hover:border-primary hover:bg-primary/10 hover:shadow-[0_0_18px_hsl(var(--primary)/0.45)] focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-default disabled:opacity-70 md:h-14 md:w-14"
         :class="phase === 'idle' && !settings.reducedMotion && 'animate-pulse'"
-        @click="finishHold"
+        @pointerdown="startHold"
+        @pointerup="cancelHold"
+        @pointerleave="cancelHold"
+        @pointercancel="cancelHold"
+        @contextmenu.prevent
+        @keydown="onKeyDown"
+        @keyup="onKeyUp"
+        @blur="cancelHold"
       >
         <span
           aria-hidden="true"
@@ -210,7 +218,7 @@ const isShuffling = computed(
     </div>
 
     <!-- 进度条 -->
-    <div class="mx-auto mb-lg max-w-[320px]">
+    <div class="relative z-10 mx-auto mb-lg max-w-[320px]">
       <div class="h-1 w-full overflow-hidden rounded-full bg-muted">
         <div
           class="h-full rounded-full bg-primary transition-[width] duration-75 ease-out"
