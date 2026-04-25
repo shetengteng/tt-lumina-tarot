@@ -8,7 +8,9 @@
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
-    "type-check": "vue-tsc --noEmit"
+    "type-check": "vue-tsc --noEmit",
+    "icons:gen": "node scripts/generate-pwa-icons.mjs",
+    "verify:pwa": "node scripts/verify-pwa.mjs"
   },
   "dependencies": {
     "@vueuse/core": "^11.3.0",
@@ -20,16 +22,21 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vue": "^3.5.13",
+    "vue-i18n": "^11.4.0",
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "@vitejs/plugin-vue": "^5.2.1",
     "autoprefixer": "^10.4.20",
+    "chrome-remote-interface": "^0.34.0",
     "postcss": "^8.4.49",
+    "sharp": "^0.34.5",
     "tailwindcss": "^3.4.17",
     "typescript": "~5.6.3",
     "vite": "^6.0.5",
-    "vue-tsc": "^2.1.10"
+    "vite-plugin-pwa": "^1.2.0",
+    "vue-tsc": "^2.1.10",
+    "workbox-window": "^7.4.0"
   }
 }

@@ -49,7 +49,9 @@
 }
 
 @layer components {
-  /* 牌背：业务统一使用 .card-back，三主题自动差异化 */
+  /* 牌背：业务统一使用 .card-back。
+     背景与边框三主题在此控制；中央装饰图案改由 <CardBackPattern> SVG 渲染，
+     通过设置项 data-card-back 切换 5 种花纹（classic / celestial / sacred / floral / eye）。 */
   .card-back {
     position: relative;
     overflow: hidden;
@@ -62,55 +64,10 @@
       linear-gradient(135deg, hsl(229 35% 17%) 0%, hsl(230 30% 7%) 100%);
     border: 1px solid hsl(38 47% 58%);
   }
-  html[data-theme='mystic'] .card-back::after {
-    content: '';
-    position: absolute;
-    inset: 8%;
-    border: 1px solid hsl(38 47% 58% / 0.35);
-    border-radius: calc(theme('borderRadius.lg') - 4px);
-    background:
-      radial-gradient(circle at 50% 50%, transparent 40%, hsl(38 47% 58% / 0.15) 42%, transparent 44%),
-      radial-gradient(circle at 50% 50%, transparent 55%, hsl(38 47% 58% / 0.12) 57%, transparent 59%);
-  }
-  html[data-theme='mystic'] .card-back::before {
-    content: '✦';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    color: hsl(43 72% 69%);
-    font-size: clamp(1.2rem, 2.2vw, 2.2rem);
-    opacity: 0.85;
-    font-family: var(--font-display);
-    z-index: 2;
-  }
 
   html[data-theme='minimal'] .card-back {
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
-  }
-  html[data-theme='minimal'] .card-back::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 40%;
-    aspect-ratio: 1;
-    border: 1.5px solid hsl(var(--foreground));
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-  }
-  html[data-theme='minimal'] .card-back::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 6px;
-    aspect-ratio: 1;
-    background: hsl(var(--foreground));
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1;
   }
 
   html[data-theme='nature'] .card-back {
@@ -118,24 +75,6 @@
       radial-gradient(circle at 50% 40%, hsl(30 52% 65% / 0.4) 0%, transparent 60%),
       linear-gradient(135deg, hsl(30 42% 55%) 0%, hsl(18 42% 35%) 100%);
     border: 1px solid hsl(38 47% 58% / 0.5);
-  }
-  html[data-theme='nature'] .card-back::after {
-    content: '';
-    position: absolute;
-    inset: 12%;
-    border: 1px dashed hsl(37 67% 93% / 0.4);
-    border-radius: calc(theme('borderRadius.lg') - 4px);
-    background: radial-gradient(circle at 50% 50%, hsl(37 67% 93% / 0.25) 0%, transparent 45%);
-  }
-  html[data-theme='nature'] .card-back::before {
-    content: '❋';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    color: hsl(37 67% 93%);
-    font-size: clamp(1.1rem, 2vw, 2rem);
-    z-index: 2;
   }
 
   .handwritten {

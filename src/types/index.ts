@@ -1,5 +1,13 @@
 export type ThemeId = 'mystic' | 'minimal' | 'nature';
 
+export type CardBackVariant = 'classic' | 'celestial' | 'sacred' | 'floral' | 'eye';
+
+export type MinorIllustrationStyle = 'symbol' | 'geometric';
+
+export type Locale = 'zh-CN' | 'en-US';
+
+export type AnimationLevel = 'off' | 'lite' | 'full';
+
 export type Arcana = 'major' | 'minor';
 
 export type CardSuit = 'wands' | 'cups' | 'swords' | 'pentacles';

@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import type { TarotCardDef, CardRank } from '@/types';
 import { cn } from '@/lib/utils';
+import { useSettingsStore } from '@/stores/settings';
+import CardBackPattern from './CardBackPattern.vue';
+import MinorIllustration from './MinorIllustration.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -14,6 +18,9 @@ const props = withDefaults(
   }>(),
   { reversed: false, flipped: false, size: 'md', interactive: false }
 );
+
+const settings = useSettingsStore();
+const { cardBack, minorStyle } = storeToRefs(settings);
 
 const emit = defineEmits<{
   (e: 'flip'): void;
@@ -71,7 +78,9 @@ function onClick() {
     @click="onClick"
   >
     <div class="relative h-full w-full transition-transform duration-700" style="transform-style: preserve-3d" :class="flipped ? 'is-flipped' : ''">
-      <div class="card-face card-back absolute inset-0 flex items-center justify-center" />
+      <div class="card-face card-back absolute inset-0 flex items-center justify-center">
+        <CardBackPattern :variant="cardBack" />
+      </div>
 
       <div class="card-face card-front absolute inset-0 flex flex-col overflow-hidden rounded-lg border border-border bg-card p-md text-card-foreground shadow-sm">
         <div class="flex items-start justify-between text-[0.65rem] uppercase tracking-widest text-muted-foreground">
@@ -80,9 +89,16 @@ function onClick() {
         </div>
 
         <div class="flex flex-1 items-center justify-center py-xs">
-          <span class="select-none text-[clamp(2.4rem,5vw,3.2rem)] leading-none" :class="[reversed ? 'rotate-180' : '']">
-            {{ card?.symbol ?? '?' }}
-          </span>
+          <template v-if="card && card.arcana === 'minor' && card.suit && card.rank">
+            <div class="minor-wrap" :class="[reversed ? 'rotate-180' : '']">
+              <MinorIllustration :suit="card.suit" :rank="card.rank" :style="minorStyle" />
+            </div>
+          </template>
+          <template v-else>
+            <span class="select-none text-[clamp(2.4rem,5vw,3.2rem)] leading-none" :class="[reversed ? 'rotate-180' : '']">
+              {{ card?.symbol ?? '?' }}
+            </span>
+          </template>
         </div>
 
         <div class="text-center">
@@ -123,5 +139,12 @@ function onClick() {
 }
 .is-flipped {
   transform: rotateY(180deg);
+}
+.minor-wrap {
+  width: 80%;
+  aspect-ratio: 100 / 130;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

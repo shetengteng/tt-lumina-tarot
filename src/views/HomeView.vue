@@ -13,6 +13,8 @@ const router = useRouter();
 const readingStore = useReadingStore();
 const { history } = storeToRefs(readingStore);
 
+const heroCardRef = ref<HTMLElement | null>(null);
+
 type DailySlot = {
   area: '事业' | '感情' | '自我';
   areaEn: string;
@@ -73,14 +75,34 @@ function loadOrGenerateDaily() {
 
 type QuickDraw = { card: TarotCardDef; reversed: boolean; flipped: boolean };
 const quickDraw = ref<QuickDraw | null>(null);
-const quickOpen = ref(false);
 const drawing = ref(false);
 
-function toggleDailyCard() {
-  if (!quickOpen.value) {
-    quickOpen.value = true;
+const heroFlipped = computed(() => !!quickDraw.value?.flipped);
+const heroHint = computed(() => {
+  if (!quickDraw.value) return '点击开启 · DAILY DRAW';
+  if (drawing.value) return '抽取中…';
+  if (!quickDraw.value.flipped) return '正在翻面…';
+  return `${quickDraw.value.card.name} · ${quickDraw.value.reversed ? '逆位' : '正位'}`;
+});
+
+function onHeroCardClick() {
+  if (drawing.value) return;
+  if (!quickDraw.value || quickDraw.value.flipped) {
+    drawDaily();
+    return;
   }
-  drawDaily();
+  quickDraw.value.flipped = true;
+}
+
+function scrollToHeroCard() {
+  if (heroCardRef.value) {
+    heroCardRef.value.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  if (!quickDraw.value) {
+    drawDaily();
+  } else if (quickDraw.value.flipped) {
+    drawDaily();
+  }
 }
 
 async function drawDaily() {
@@ -96,8 +118,8 @@ async function drawDaily() {
 }
 
 function closeDaily() {
-  quickOpen.value = false;
   quickDraw.value = null;
+  drawing.value = false;
 }
 
 function startReading() {
@@ -152,77 +174,72 @@ onMounted(() => {
         <button
           type="button"
           class="inline-flex min-h-[44px] items-center justify-center gap-sm rounded-lg border border-border/70 px-xl py-md text-sm font-medium text-foreground transition-all hover:bg-accent/40"
-          @click="toggleDailyCard"
+          @click="scrollToHeroCard"
         >
           <span aria-hidden="true">✦</span>
           <span>今日一牌</span>
         </button>
       </div>
+
+      <!-- Hero 牌位：默认即出现的仪式焦点 -->
+      <div ref="heroCardRef" class="hero-card-stage relative mt-xl flex flex-col items-center">
+        <div class="hero-card-aura" aria-hidden="true" />
+        <TarotCard
+          :card="quickDraw?.card ?? null"
+          :reversed="quickDraw?.reversed ?? false"
+          :flipped="heroFlipped"
+          size="lg"
+          interactive
+          class="relative z-10"
+          @flip="onHeroCardClick"
+        />
+        <p
+          class="mt-md font-display text-[11px] tracking-[0.42em] text-muted-foreground transition-colors"
+          :class="{ 'text-primary': heroFlipped }"
+        >
+          {{ heroHint }}
+        </p>
+      </div>
     </div>
 
-    <!-- 今日一牌 · 展开区 -->
+    <!-- 今日一牌 · 翻面后的文字结果 -->
     <transition name="fade">
       <div
-        v-if="quickOpen"
+        v-if="quickDraw?.flipped"
         class="mx-auto mb-xl w-full max-w-xl rounded-lg border border-border/60 bg-card/70 p-lg shadow-sm backdrop-blur-sm"
       >
-        <div class="flex items-start gap-lg">
-          <div class="shrink-0">
-            <TarotCard
-              :card="quickDraw?.card ?? null"
-              :reversed="quickDraw?.reversed ?? false"
-              :flipped="quickDraw?.flipped ?? false"
-              size="md"
-              interactive
-              @flip="quickDraw && (quickDraw.flipped = !quickDraw.flipped)"
-            />
-          </div>
-          <div class="flex min-w-0 flex-1 flex-col gap-xs text-sm">
-            <div class="flex items-center justify-between gap-sm">
-              <p class="font-display text-xs tracking-[0.3em] text-muted-foreground">
-                DAILY DRAW
-              </p>
-              <button
-                type="button"
-                class="text-xs text-muted-foreground transition hover:text-foreground"
-                aria-label="关闭今日一牌"
-                @click="closeDaily"
-              >
-                关闭
-              </button>
-            </div>
-            <template v-if="quickDraw?.flipped && quickDraw.card">
-              <div class="font-display text-xl text-foreground">
-                {{ quickDraw.card.name }}
-                <span v-if="quickDraw.reversed" class="ml-xs rounded-md border border-destructive/50 px-xs text-[10px] tracking-wider text-destructive">
-                  REVERSED
-                </span>
-              </div>
-              <p class="text-muted-foreground">
-                {{ quickDraw.reversed ? quickDraw.card.reversed.advice : quickDraw.card.upright.advice }}
-              </p>
-              <div class="mt-xs flex flex-wrap gap-xs">
-                <button
-                  type="button"
-                  class="rounded-md border border-border/60 px-sm py-xs text-xs text-muted-foreground transition hover:bg-accent/40 hover:text-foreground"
-                  :disabled="drawing"
-                  @click="drawDaily"
-                >
-                  {{ drawing ? '抽取中…' : '再抽一张' }}
-                </button>
-                <button
-                  type="button"
-                  class="rounded-md border border-border/60 px-sm py-xs text-xs text-muted-foreground transition hover:bg-accent/40 hover:text-foreground"
-                  @click="router.push({ name: 'library', query: { focus: quickDraw.card.id } })"
-                >
-                  查看图鉴 →
-                </button>
-              </div>
-            </template>
-            <template v-else>
-              <p class="text-muted-foreground">点击牌面，或等待它为你翻开。</p>
-            </template>
-          </div>
+        <div class="flex items-center justify-between gap-sm">
+          <p class="font-display text-xs tracking-[0.3em] text-muted-foreground">
+            DAILY DRAW
+          </p>
+          <button
+            type="button"
+            class="text-xs text-muted-foreground transition hover:text-foreground"
+            aria-label="关闭今日一牌"
+            @click="closeDaily"
+          >
+            关闭
+          </button>
+        </div>
+        <p class="mt-sm text-sm leading-relaxed text-muted-foreground">
+          {{ quickDraw.reversed ? quickDraw.card.reversed.advice : quickDraw.card.upright.advice }}
+        </p>
+        <div class="mt-md flex flex-wrap gap-xs">
+          <button
+            type="button"
+            class="rounded-md border border-border/60 px-sm py-xs text-xs text-muted-foreground transition hover:bg-accent/40 hover:text-foreground"
+            :disabled="drawing"
+            @click="drawDaily"
+          >
+            {{ drawing ? '抽取中…' : '再抽一张' }}
+          </button>
+          <button
+            type="button"
+            class="rounded-md border border-border/60 px-sm py-xs text-xs text-muted-foreground transition hover:bg-accent/40 hover:text-foreground"
+            @click="router.push({ name: 'library', query: { focus: quickDraw.card.id } })"
+          >
+            查看图鉴 →
+          </button>
         </div>
       </div>
     </transition>
@@ -337,5 +354,47 @@ onMounted(() => {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-6px);
+}
+
+.hero-card-stage {
+  --aura-size: 320px;
+}
+
+.hero-card-aura {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--aura-size);
+  height: calc(var(--aura-size) * 1.45);
+  transform: translate(-50%, calc(-50% - 16px));
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    hsl(var(--primary) / 0.22) 0%,
+    hsl(var(--primary) / 0.08) 35%,
+    transparent 70%
+  );
+  filter: blur(16px);
+  pointer-events: none;
+  animation: hero-aura 5.4s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes hero-aura {
+  0%, 100% {
+    opacity: 0.55;
+    transform: translate(-50%, calc(-50% - 16px)) scale(0.94);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, calc(-50% - 16px)) scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-card-aura {
+    animation: none;
+    opacity: 0.6;
+    transform: translate(-50%, calc(-50% - 16px));
+  }
 }
 </style>

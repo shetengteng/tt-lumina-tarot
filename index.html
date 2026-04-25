@@ -7,6 +7,14 @@
     <meta name="description" content="Lumina Tarot · 离线塔罗牌占卜 · 在黑暗中点亮内心微光" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/img/apple-touch-icon-180.png" />
+    <link rel="mask-icon" href="/favicon.svg" color="#c9a961" />
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Lumina" />
+    <meta name="application-name" content="Lumina Tarot" />
+    <meta name="mobile-web-app-capable" content="yes" />
 
     <title>Lumina Tarot · 在黑暗中点亮微光</title>
 
@@ -26,6 +34,26 @@
               t === 'mystic' ? '#0b0d1a' : t === 'minimal' ? '#faf8f4' : '#f4ecd8'
             );
           }
+
+          var cb = localStorage.getItem('lumina-card-back');
+          var cm = (location.search || '').match(/[?&]cb=(classic|celestial|sacred|floral|eye)/);
+          if (cm) {
+            cb = cm[1];
+            try { localStorage.setItem('lumina-card-back', cb); } catch (e) {}
+          }
+          if (cb === 'classic' || cb === 'celestial' || cb === 'sacred' || cb === 'floral' || cb === 'eye') {
+            document.documentElement.dataset.cardBack = cb;
+          } else {
+            document.documentElement.dataset.cardBack = 'classic';
+          }
+
+          var ms = localStorage.getItem('lumina-minor-style');
+          var mm = (location.search || '').match(/[?&]ms=(symbol|geometric)/);
+          if (mm) {
+            ms = mm[1];
+            try { localStorage.setItem('lumina-minor-style', ms); } catch (e) {}
+          }
+          document.documentElement.dataset.minorStyle = (ms === 'geometric') ? 'geometric' : 'symbol';
         } catch (e) {}
       })();
     </script>
