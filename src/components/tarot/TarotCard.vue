@@ -76,6 +76,8 @@ function onClick() {
     :class="cn('tarot-card group perspective', sizeClass, props.class)"
     :data-flipped="flipped"
     :data-reversed="reversed"
+    :data-art-theme="cardArtTheme"
+    :data-size="size"
     :disabled="!interactive"
     @click="onClick"
   >

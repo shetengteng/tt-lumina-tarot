@@ -83,6 +83,7 @@ const quickDraw = ref<QuickDraw | null>(null);
 const drawing = ref(false);
 let revealTimer: ReturnType<typeof setTimeout> | null = null;
 let drawTimer: ReturnType<typeof setTimeout> | null = null;
+let unflipTimer: ReturnType<typeof setTimeout> | null = null;
 
 const FLIP_DURATION_MS = 700;
 const PRE_FLIP_DELAY_MS = 500;
@@ -104,6 +105,10 @@ function clearTimers() {
   if (drawTimer) {
     clearTimeout(drawTimer);
     drawTimer = null;
+  }
+  if (unflipTimer) {
+    clearTimeout(unflipTimer);
+    unflipTimer = null;
   }
 }
 
@@ -140,8 +145,7 @@ function scheduleReveal() {
   }, FLIP_DURATION_MS);
 }
 
-async function drawDaily() {
-  clearTimers();
+function startDrawCycle() {
   drawing.value = true;
   const pool = shuffle(ALL_CARDS);
   const card = pool[0];
@@ -153,6 +157,23 @@ async function drawDaily() {
     drawTimer = null;
     scheduleReveal();
   }, PRE_FLIP_DELAY_MS);
+}
+
+async function drawDaily() {
+  clearTimers();
+
+  if (quickDraw.value && quickDraw.value.flipped) {
+    drawing.value = true;
+    quickDraw.value.revealed = false;
+    quickDraw.value.flipped = false;
+    unflipTimer = setTimeout(() => {
+      unflipTimer = null;
+      startDrawCycle();
+    }, FLIP_DURATION_MS);
+    return;
+  }
+
+  startDrawCycle();
 }
 
 function closeDaily() {

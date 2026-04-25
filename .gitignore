@@ -45,3 +45,9 @@ terminals/
 .Trashes
 Thumbs.db
 prompts.txt
+
+# Raw downloaded assets (copyrighted, used for local AI->SVG transformation only)
+raw-assets/
+
+# Local-only release/backup archives (may contain copyrighted assets)
+release/

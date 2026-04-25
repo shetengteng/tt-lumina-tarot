@@ -116,47 +116,6 @@ function exportJSON() {
         </CardContent>
       </Card>
 
-      <Card v-if="cardArtTheme === 'minimal'">
-        <CardContent class="space-y-md p-lg">
-          <div class="space-y-xs">
-            <Label>牌背图案</Label>
-            <p class="text-sm text-muted-foreground">
-              洗牌、牌阵、占卜结果中所有未翻面的牌都会使用此图案。仅在「卡面主题 = 极简」时可自由选择。
-            </p>
-          </div>
-          <div class="grid grid-cols-2 gap-sm sm:grid-cols-3">
-            <button
-              v-for="opt in CARD_BACK_OPTIONS"
-              :key="opt.id"
-              type="button"
-              :aria-pressed="cardBack === opt.id"
-              class="card-back-option group relative flex flex-col items-center gap-xs rounded-lg border p-sm transition focus:outline-none"
-              :class="cardBack === opt.id
-                ? 'border-primary bg-accent/40 shadow-[0_0_0_1px_hsl(var(--primary)/0.4)]'
-                : 'border-border/60 hover:border-primary/50 hover:bg-accent/30'"
-              @click="settings.setCardBack(opt.id)"
-            >
-              <div class="card-back preview-card relative h-[112px] w-[68px] shrink-0">
-                <CardBackPattern :variant="opt.id" />
-              </div>
-              <div class="text-center">
-                <div class="text-xs font-medium text-foreground">{{ opt.name }}</div>
-                <div class="mt-0.5 text-[10px] text-muted-foreground">{{ opt.desc }}</div>
-              </div>
-              <span
-                v-if="cardBack === opt.id"
-                class="absolute right-xs top-xs rounded-full bg-primary px-xs text-[10px] leading-4 text-primary-foreground"
-              >
-                ✓
-              </span>
-            </button>
-          </div>
-          <p class="text-xs text-muted-foreground">
-            当前：<span class="text-foreground">{{ CARD_BACK_OPTIONS.find(o => o.id === cardBack)?.name }}</span>
-          </p>
-        </CardContent>
-      </Card>
-
       <Card>
         <CardContent class="space-y-md p-lg">
           <div class="space-y-xs">
@@ -221,6 +180,47 @@ function exportJSON() {
           >
             ⚠ Aquatic Tarot 由 Andreas Schröter 创作，授权为 <strong>CC BY-NC-SA 3.0</strong>，
             仅限个人非商业用途。如需商业使用请改用「极简」或「经典韦特」。
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card v-if="cardArtTheme === 'minimal'">
+        <CardContent class="space-y-md p-lg">
+          <div class="space-y-xs">
+            <Label>牌背图案</Label>
+            <p class="text-sm text-muted-foreground">
+              洗牌、牌阵、占卜结果中所有未翻面的牌都会使用此图案。仅在「卡面主题 = 极简」时可自由选择。
+            </p>
+          </div>
+          <div class="grid grid-cols-2 gap-sm sm:grid-cols-3">
+            <button
+              v-for="opt in CARD_BACK_OPTIONS"
+              :key="opt.id"
+              type="button"
+              :aria-pressed="cardBack === opt.id"
+              class="card-back-option group relative flex flex-col items-center gap-xs rounded-lg border p-sm transition focus:outline-none"
+              :class="cardBack === opt.id
+                ? 'border-primary bg-accent/40 shadow-[0_0_0_1px_hsl(var(--primary)/0.4)]'
+                : 'border-border/60 hover:border-primary/50 hover:bg-accent/30'"
+              @click="settings.setCardBack(opt.id)"
+            >
+              <div class="card-back preview-card relative h-[112px] w-[68px] shrink-0">
+                <CardBackPattern :variant="opt.id" />
+              </div>
+              <div class="text-center">
+                <div class="text-xs font-medium text-foreground">{{ opt.name }}</div>
+                <div class="mt-0.5 text-[10px] text-muted-foreground">{{ opt.desc }}</div>
+              </div>
+              <span
+                v-if="cardBack === opt.id"
+                class="absolute right-xs top-xs rounded-full bg-primary px-xs text-[10px] leading-4 text-primary-foreground"
+              >
+                ✓
+              </span>
+            </button>
+          </div>
+          <p class="text-xs text-muted-foreground">
+            当前：<span class="text-foreground">{{ CARD_BACK_OPTIONS.find(o => o.id === cardBack)?.name }}</span>
           </p>
         </CardContent>
       </Card>
