@@ -21,26 +21,28 @@ onMounted(async () => {
     class="relative z-10 mt-2xl hidden border-t border-border/50 py-lg md:block"
   >
     <div
-      class="mx-auto flex max-w-5xl flex-col items-center gap-sm px-md text-center text-xs text-muted-foreground"
+      class="mx-auto flex max-w-5xl items-center justify-between gap-md px-md text-xs text-muted-foreground"
     >
-      <p class="font-display tracking-widest">
-        Lumina Tarot · 在黑暗中点亮内心微光
-      </p>
-      <p class="opacity-70">
-        Offline-first · Vue 3 · Tailwind · shadcn-vue
-      </p>
-      <div class="mt-xs rounded-md bg-white p-xs shadow-sm">
+      <div>
+        <p class="font-display tracking-widest">
+          Lumina Tarot · 在黑暗中点亮内心微光
+        </p>
+        <p class="mt-xs opacity-70">
+          Offline-first · Vue 3 · Tailwind · shadcn-vue
+        </p>
+      </div>
+      <div class="shrink-0 rounded-md bg-white p-[2px] shadow-sm">
         <img
           v-if="shareQrDataUrl"
           :src="shareQrDataUrl"
           alt=""
-          width="48"
-          height="48"
-          class="block h-[48px] w-[48px]"
+          width="32"
+          height="32"
+          class="block h-[32px] w-[32px]"
         />
         <div
           v-else
-          class="h-[48px] w-[48px] animate-pulse rounded-sm bg-muted"
+          class="h-[32px] w-[32px] animate-pulse rounded-sm bg-muted"
           aria-hidden="true"
         />
       </div>
