@@ -65,28 +65,21 @@ const PREVIEW_SUITS: CardSuit[] = ['wands', 'cups', 'swords', 'pentacles'];
 const CARD_ART_THEME_OPTIONS = computed<Array<{
   id: CardArtTheme;
   name: string;
-  desc: string;
-  badge?: string;
   preview: string;
 }>>(() => [
   {
     id: 'minimal',
     name: t('settings.cardArtMinimal'),
-    desc: t('settings.cardArtMinimalDesc'),
     preview: '/img/card-theme-preview-minimal.webp',
   },
   {
     id: 'rws',
     name: t('settings.cardArtRws'),
-    desc: t('settings.cardArtRwsDesc'),
-    badge: t('settings.cardArtRwsBadge'),
     preview: '/decks/rws/fool.webp',
   },
   {
     id: 'aquatic',
     name: t('settings.cardArtAquatic'),
-    desc: t('settings.cardArtAquaticDesc'),
-    badge: t('settings.cardArtAquaticBadge'),
     preview: '/decks/aquatic/fool.webp',
   },
 ]);
@@ -206,13 +199,6 @@ async function exportJSON() {
               </div>
               <div>
                 <div class="text-sm font-medium text-foreground">{{ opt.name }}</div>
-                <div class="mt-0.5 text-[11px] leading-snug text-muted-foreground">{{ opt.desc }}</div>
-                <div
-                  v-if="opt.badge"
-                  class="mt-xs inline-block rounded border border-border/60 bg-muted/40 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground"
-                >
-                  {{ opt.badge }}
-                </div>
               </div>
               <span
                 v-if="cardArtTheme === opt.id"
