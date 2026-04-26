@@ -21,7 +21,7 @@ onMounted(async () => {
     class="relative z-10 mt-2xl hidden border-t border-border/50 py-lg md:block"
   >
     <div
-      class="mx-auto flex max-w-5xl items-center justify-between gap-md px-md text-xs text-muted-foreground"
+      class="mx-auto flex max-w-5xl items-center justify-center gap-sm px-md text-xs text-muted-foreground"
     >
       <div>
         <p class="font-display tracking-widest">
@@ -36,13 +36,13 @@ onMounted(async () => {
           v-if="shareQrDataUrl"
           :src="shareQrDataUrl"
           alt=""
-          width="32"
-          height="32"
-          class="block h-[32px] w-[32px]"
+          width="28"
+          height="28"
+          class="block h-[28px] w-[28px]"
         />
         <div
           v-else
-          class="h-[32px] w-[32px] animate-pulse rounded-sm bg-muted"
+          class="h-[28px] w-[28px] animate-pulse rounded-sm bg-muted"
           aria-hidden="true"
         />
       </div>
