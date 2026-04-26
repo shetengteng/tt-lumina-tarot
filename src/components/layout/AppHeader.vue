@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 
 const canGoBack = computed(() => route.name !== 'home');
 
-const navLinks = [
-  { name: 'home', label: '首页' },
-  { name: 'library', label: '图鉴' },
-  { name: 'history', label: '历史' },
-  { name: 'settings', label: '设置' },
-];
+const navLinks = computed(() => [
+  { name: 'home', label: t('nav.home') },
+  { name: 'library', label: t('nav.library') },
+  { name: 'history', label: t('nav.history') },
+  { name: 'settings', label: t('nav.settings') },
+]);
 
 function goBack() {
   if (window.history.length > 1) router.back();
@@ -28,7 +30,7 @@ function goBack() {
       v-if="canGoBack"
       type="button"
       class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-card/60 text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground"
-      aria-label="返回"
+      :aria-label="t('nav.backAria')"
       @click="goBack"
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>

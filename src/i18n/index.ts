@@ -2,8 +2,6 @@ import { createI18n } from 'vue-i18n';
 import type { Locale } from '@/types';
 import zhCN from './locales/zh-CN';
 import enUS from './locales/en-US';
-import { CARDS_ZH_CN } from './locales/cards/zh-CN';
-import { CARDS_EN_US } from './locales/cards/en-US';
 
 export const SUPPORTED_LOCALES: Locale[] = ['zh-CN', 'en-US'];
 export const DEFAULT_LOCALE: Locale = 'zh-CN';
@@ -29,12 +27,39 @@ const i18n = createI18n({
   missingWarn: false,
   fallbackWarn: false,
   messages: {
-    'zh-CN': { ...zhCN, cards: CARDS_ZH_CN },
-    'en-US': { ...enUS, cards: CARDS_EN_US },
+    'zh-CN': zhCN,
+    'en-US': enUS,
   },
 });
 
 export default i18n;
+
+const cardsLoaded: Partial<Record<Locale, boolean>> = {};
+let cardsLoadingPromise: Promise<void> | null = null;
+
+/**
+ * Load the heavy 78-card i18n dictionary on demand.
+ * Cards are not used on Home / Spread / Question / Shuffle / Reveal,
+ * so deferring this saves ~25 KB gzip from the initial chunk.
+ */
+export function ensureCardsLocale(locale: Locale = i18n.global.locale.value as Locale): Promise<void> {
+  if (cardsLoaded[locale]) return Promise.resolve();
+  if (cardsLoadingPromise) return cardsLoadingPromise;
+  cardsLoadingPromise = (async () => {
+    if (locale === 'en-US') {
+      const { CARDS_EN_US } = await import('./locales/cards/en-US');
+      i18n.global.mergeLocaleMessage('en-US', { cards: CARDS_EN_US });
+      cardsLoaded['en-US'] = true;
+    } else {
+      const { CARDS_ZH_CN } = await import('./locales/cards/zh-CN');
+      i18n.global.mergeLocaleMessage('zh-CN', { cards: CARDS_ZH_CN });
+      cardsLoaded['zh-CN'] = true;
+    }
+  })().finally(() => {
+    cardsLoadingPromise = null;
+  });
+  return cardsLoadingPromise;
+}
 
 export function setI18nLocale(next: Locale) {
   i18n.global.locale.value = next;
@@ -49,4 +74,5 @@ export function setI18nLocale(next: Locale) {
       /* ignore */
     }
   }
+  void ensureCardsLocale(next);
 }

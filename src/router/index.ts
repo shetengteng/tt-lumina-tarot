@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router';
+import { ensureCardsLocale } from '@/i18n';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -29,31 +30,31 @@ const routes: RouteRecordRaw[] = [
     path: '/reveal',
     name: 'reveal',
     component: () => import('@/views/RevealView.vue'),
-    meta: { title: '翻牌揭示' },
+    meta: { title: '翻牌揭示', needsCards: true },
   },
   {
     path: '/reading',
     name: 'reading',
     component: () => import('@/views/ReadingView.vue'),
-    meta: { title: '解读' },
+    meta: { title: '解读', needsCards: true },
   },
   {
     path: '/library',
     name: 'library',
     component: () => import('@/views/LibraryView.vue'),
-    meta: { title: '牌卡图鉴' },
+    meta: { title: '牌卡图鉴', needsCards: true },
   },
   {
     path: '/library/:id',
     name: 'card-detail',
     component: () => import('@/views/CardDetailView.vue'),
-    meta: { title: '卡牌详情' },
+    meta: { title: '卡牌详情', needsCards: true },
   },
   {
     path: '/history',
     name: 'history',
     component: () => import('@/views/HistoryView.vue'),
-    meta: { title: '占卜历史' },
+    meta: { title: '占卜历史', needsCards: true },
   },
   {
     path: '/settings',
@@ -73,6 +74,13 @@ const router = createRouter({
   scrollBehavior() {
     return { top: 0 };
   },
+});
+
+router.beforeEach((to) => {
+  if (to.meta?.needsCards) {
+    void ensureCardsLocale();
+  }
+  return true;
 });
 
 router.afterEach((to) => {

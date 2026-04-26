@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -8,10 +9,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { useReadingStore } from '@/stores/reading';
 import { getSpreadById } from '@/data/spreads';
 import { MOODS } from '@/data/moods';
+import { useTarotI18n } from '@/composables/useTarotI18n';
 import { cn } from '@/lib/utils';
 
 const router = useRouter();
+const { t } = useI18n();
 const readingStore = useReadingStore();
+const { spreadName, moodLabel } = useTarotI18n();
 
 const question = ref(readingStore.current?.question ?? '');
 const mood = ref<string | undefined>(readingStore.current?.mood);
@@ -37,10 +41,10 @@ function next() {
 <template>
   <section class="mx-auto max-w-3xl px-md pt-2xl pb-2xl">
     <header class="mb-xl text-center">
-      <div class="text-xs uppercase tracking-[0.4em] text-primary">Step 2 / 4</div>
-      <h1 class="mt-sm font-display text-3xl tracking-wide md:text-4xl">写下你的问题</h1>
+      <div class="text-xs uppercase tracking-[0.4em] text-primary">{{ t('question.pageLabel') }}</div>
+      <h1 class="mt-sm font-display text-3xl tracking-wide md:text-4xl">{{ t('question.title') }}</h1>
       <p class="mt-sm text-sm text-muted-foreground">
-        一个具体、可回答的问题，会让牌面更聚焦。
+        {{ t('question.subtitle') }}
       </p>
     </header>
 
@@ -48,27 +52,27 @@ function next() {
       <CardContent class="space-y-lg p-lg md:p-xl">
         <div v-if="spread" class="rounded-md border border-border/60 bg-muted/40 p-md text-sm text-muted-foreground">
           <span class="text-primary">●</span>
-          当前牌阵：<span class="font-medium text-foreground">{{ spread.name }}</span>
-          <span class="mx-xs opacity-50">·</span>{{ spread.count }} 张
+          {{ t('question.currentSpread') }}<span class="font-medium text-foreground">{{ spreadName(spread) }}</span>
+          <span class="mx-xs opacity-50">·</span>{{ t('spread.countLabel', { count: spread.count }) }}
         </div>
 
         <div class="space-y-xs">
-          <Label for="q">你的问题</Label>
+          <Label for="q">{{ t('question.questionLabel') }}</Label>
           <Textarea
             id="q"
             v-model="question"
-            placeholder="例如：这段关系中我真正在意的是什么？ / 下一步工作选择该考虑哪些因素？"
+            :placeholder="t('question.placeholder')"
             :rows="5"
             :maxlength="280"
           />
           <div class="flex justify-between text-xs text-muted-foreground">
-            <span>至少 4 个字，最多 280 字。</span>
+            <span>{{ t('question.counterHint') }}</span>
             <span>{{ question.length }} / 280</span>
           </div>
         </div>
 
         <div class="space-y-xs">
-          <Label>此刻的心情（可选）</Label>
+          <Label>{{ t('question.moodLabel') }}</Label>
           <div class="flex flex-wrap gap-xs">
             <button
               v-for="m in MOODS"
@@ -85,14 +89,14 @@ function next() {
               @click="mood = mood === m.id ? undefined : m.id"
             >
               <span class="text-primary">{{ m.emoji }}</span>
-              {{ m.label }}
+              {{ moodLabel(m.id) }}
             </button>
           </div>
         </div>
 
         <div class="flex justify-end">
           <Button variant="glow" size="lg" :disabled="!canGoNext" @click="next">
-            去洗牌 →
+            {{ t('question.nextStep') }}
           </Button>
         </div>
       </CardContent>

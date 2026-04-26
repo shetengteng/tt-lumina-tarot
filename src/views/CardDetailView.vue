@@ -1,17 +1,22 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import TarotCardVue from '@/components/tarot/TarotCard.vue';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import type { CardRank } from '@/types';
-import { ALL_CARDS, SUITS, getCardById } from '@/data/cards';
+import { ALL_CARDS, getCardById } from '@/data/cards';
+import { useCardI18n } from '@/composables/useCardI18n';
+import { useTarotI18n } from '@/composables/useTarotI18n';
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
+const { getName, getField, getKeywords } = useCardI18n();
+const { suitLabel, rankLabel, elementLabel } = useTarotI18n();
 
 const card = computed(() => getCardById(String(route.params.id)) ?? null);
 
@@ -30,29 +35,11 @@ const nextCard = computed(() =>
     : null
 );
 
-const RANK_LABEL: Record<CardRank, string> = {
-  ace: 'Ace',
-  '2': 'Two',
-  '3': 'Three',
-  '4': 'Four',
-  '5': 'Five',
-  '6': 'Six',
-  '7': 'Seven',
-  '8': 'Eight',
-  '9': 'Nine',
-  '10': 'Ten',
-  page: 'Page',
-  knight: 'Knight',
-  queen: 'Queen',
-  king: 'King',
-};
-
 const eyebrowText = computed(() => {
   const c = card.value;
   if (!c) return '';
   if (c.arcana === 'minor' && c.suit) {
-    const suitInfo = SUITS[c.suit];
-    return `${suitInfo.label} · ${c.nameEn.toUpperCase()}`;
+    return `${suitLabel(c.suit)} · ${c.nameEn.toUpperCase()}`;
   }
   return `${String(c.number).padStart(2, '0')} · ${c.nameEn.toUpperCase()}`;
 });
@@ -66,15 +53,15 @@ const eyebrowText = computed(() => {
         :disabled="!prevCard"
         @click="prevCard && router.push({ name: 'card-detail', params: { id: prevCard.id } })"
       >
-        ← {{ prevCard?.name ?? '' }}
+        ← {{ prevCard ? getName(prevCard) : '' }}
       </Button>
-      <Button variant="outline" @click="router.push({ name: 'library' })">回到图鉴</Button>
+      <Button variant="outline" @click="router.push({ name: 'library' })">{{ t('cardDetail.backToLibrary') }}</Button>
       <Button
         variant="ghost"
         :disabled="!nextCard"
         @click="nextCard && router.push({ name: 'card-detail', params: { id: nextCard.id } })"
       >
-        {{ nextCard?.name ?? '' }} →
+        {{ nextCard ? getName(nextCard) : '' }} →
       </Button>
     </div>
 
@@ -89,25 +76,27 @@ const eyebrowText = computed(() => {
 
         <div class="flex flex-col gap-md">
           <div>
-            <h1 class="font-display text-4xl tracking-wide">{{ card.name }}</h1>
-            <p class="mt-sm text-sm text-muted-foreground handwritten">{{ card.summary }}</p>
+            <h1 class="font-display text-4xl tracking-wide">{{ getName(card) }}</h1>
+            <p class="mt-sm text-sm text-muted-foreground handwritten">{{ getField(card, 'summary') }}</p>
           </div>
 
           <div class="flex flex-wrap gap-xs">
-            <Badge v-if="card.arcana === 'major'" variant="default">大阿卡那</Badge>
+            <Badge v-if="card.arcana === 'major'" variant="default">{{ t('card.arcanaMajor') }}</Badge>
             <Badge v-else-if="card.suit" variant="default">
-              小阿卡那 · {{ SUITS[card.suit].label }}
+              {{ t('card.arcanaMinor') }} · {{ suitLabel(card.suit) }}
             </Badge>
             <Badge v-if="card.arcana === 'minor' && card.rank" variant="outline">
-              {{ RANK_LABEL[card.rank] }}
+              {{ rankLabel(card.rank) }}
             </Badge>
-            <Badge variant="outline" v-if="card.element">元素 · {{ card.element }}</Badge>
-            <Badge variant="outline" v-if="card.planet">行星 · {{ card.planet }}</Badge>
-            <Badge variant="outline" v-if="card.zodiac">星座 · {{ card.zodiac }}</Badge>
+            <Badge variant="outline" v-if="card.element">
+              {{ t('cardDetail.elementLabel') }} · {{ elementLabel(card.element) }}
+            </Badge>
+            <Badge variant="outline" v-if="card.planet">{{ t('cardDetail.planetLabel') }} · {{ card.planet }}</Badge>
+            <Badge variant="outline" v-if="card.zodiac">{{ t('cardDetail.zodiacLabel') }} · {{ card.zodiac }}</Badge>
           </div>
 
           <div class="flex flex-wrap gap-xs">
-            <Badge v-for="k in card.keywords" :key="k" variant="secondary">
+            <Badge v-for="k in getKeywords(card)" :key="k" variant="secondary">
               # {{ k }}
             </Badge>
           </div>
@@ -116,25 +105,25 @@ const eyebrowText = computed(() => {
 
           <Tabs default-value="upright" class="w-full">
             <TabsList class="grid w-full max-w-xs grid-cols-2">
-              <TabsTrigger value="upright">正位</TabsTrigger>
-              <TabsTrigger value="reversed">逆位</TabsTrigger>
+              <TabsTrigger value="upright">{{ t('common.upright') }}</TabsTrigger>
+              <TabsTrigger value="reversed">{{ t('common.reversed') }}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="upright">
               <div class="space-y-md text-sm leading-relaxed">
-                <p><span class="font-display text-primary">核心 · </span>{{ card.upright.meaning }}</p>
-                <p><span class="font-display text-primary">情感 · </span>{{ card.upright.love }}</p>
-                <p><span class="font-display text-primary">事业 · </span>{{ card.upright.career }}</p>
-                <p><span class="font-display text-primary">建议 · </span>{{ card.upright.advice }}</p>
+                <p><span class="font-display text-primary">{{ t('cardDetail.coreLabel') }} · </span>{{ getField(card, 'upright.meaning') }}</p>
+                <p><span class="font-display text-primary">{{ t('cardDetail.loveLabel') }} · </span>{{ getField(card, 'upright.love') }}</p>
+                <p><span class="font-display text-primary">{{ t('cardDetail.careerLabel') }} · </span>{{ getField(card, 'upright.career') }}</p>
+                <p><span class="font-display text-primary">{{ t('cardDetail.adviceLabel') }} · </span>{{ getField(card, 'upright.advice') }}</p>
               </div>
             </TabsContent>
 
             <TabsContent value="reversed">
               <div class="space-y-md text-sm leading-relaxed">
-                <p><span class="font-display text-destructive">核心 · </span>{{ card.reversed.meaning }}</p>
-                <p><span class="font-display text-destructive">情感 · </span>{{ card.reversed.love }}</p>
-                <p><span class="font-display text-destructive">事业 · </span>{{ card.reversed.career }}</p>
-                <p><span class="font-display text-destructive">建议 · </span>{{ card.reversed.advice }}</p>
+                <p><span class="font-display text-destructive">{{ t('cardDetail.coreLabel') }} · </span>{{ getField(card, 'reversed.meaning') }}</p>
+                <p><span class="font-display text-destructive">{{ t('cardDetail.loveLabel') }} · </span>{{ getField(card, 'reversed.love') }}</p>
+                <p><span class="font-display text-destructive">{{ t('cardDetail.careerLabel') }} · </span>{{ getField(card, 'reversed.career') }}</p>
+                <p><span class="font-display text-destructive">{{ t('cardDetail.adviceLabel') }} · </span>{{ getField(card, 'reversed.advice') }}</p>
               </div>
             </TabsContent>
           </Tabs>
@@ -144,7 +133,7 @@ const eyebrowText = computed(() => {
   </section>
 
   <section v-else class="mx-auto max-w-xl px-md py-2xl text-center">
-    <p class="text-muted-foreground">未找到这张牌。</p>
-    <Button class="mt-md" @click="router.push({ name: 'library' })">回到图鉴</Button>
+    <p class="text-muted-foreground">{{ t('cardDetail.cardNotFound') }}</p>
+    <Button class="mt-md" @click="router.push({ name: 'library' })">{{ t('cardDetail.backToLibrary') }}</Button>
   </section>
 </template>

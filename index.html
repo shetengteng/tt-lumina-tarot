@@ -60,10 +60,45 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Caveat:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap"
-    />
+
+    <script>
+      (function () {
+        var FONT_BUNDLES = {
+          mystic:
+            'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap',
+          minimal:
+            'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap',
+          nature:
+            'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Caveat:wght@400;500;600&display=swap',
+        };
+        function injectStylesheet(href, blocking) {
+          var l = document.createElement('link');
+          l.rel = 'stylesheet';
+          l.href = href;
+          if (!blocking) {
+            l.media = 'print';
+            l.onload = function () {
+              l.media = 'all';
+              l.onload = null;
+            };
+          }
+          document.head.appendChild(l);
+        }
+        var theme = document.documentElement.dataset.theme || 'mystic';
+        var primary = FONT_BUNDLES[theme] || FONT_BUNDLES.mystic;
+        injectStylesheet(primary, true);
+        var idle =
+          window.requestIdleCallback ||
+          function (cb) {
+            return setTimeout(cb, 1200);
+          };
+        idle(function () {
+          Object.keys(FONT_BUNDLES).forEach(function (k) {
+            if (k !== theme) injectStylesheet(FONT_BUNDLES[k], false);
+          });
+        });
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>

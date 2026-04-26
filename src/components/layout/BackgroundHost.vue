@@ -1,13 +1,27 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useSettingsStore } from '@/stores/settings';
 
 const settings = useSettingsStore();
-const { theme, reducedMotion } = storeToRefs(settings);
+const { theme, reducedMotion, animationLevel } = storeToRefs(settings);
 
 const mode = computed(() => theme.value);
 const disabled = computed(() => reducedMotion.value);
+
+const wantsParticles = computed(
+  () => mode.value === 'mystic' && (animationLevel.value === 'full' || animationLevel.value === 'lite')
+);
+const wantsStarfield = computed(
+  () => mode.value === 'mystic' && animationLevel.value === 'full'
+);
+
+const MysticParticles = defineAsyncComponent(
+  () => import('@/components/fx/MysticParticles.vue')
+);
+const MysticStarfield = defineAsyncComponent(
+  () => import('@/components/fx/MysticStarfield.vue')
+);
 </script>
 
 <template>
@@ -16,6 +30,8 @@ const disabled = computed(() => reducedMotion.value);
       <div class="bg-mystic-base" />
       <div v-if="!disabled" class="bg-mystic-stars" />
       <div v-if="!disabled" class="bg-mystic-mist" />
+      <MysticStarfield v-if="wantsStarfield" />
+      <MysticParticles v-if="wantsParticles" />
       <div class="bg-mystic-vignette" />
     </div>
 

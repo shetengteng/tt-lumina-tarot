@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
 import { useReadingStore } from '@/stores/reading';
 import { getSpreadById } from '@/data/spreads';
@@ -13,6 +14,7 @@ const HOLD_DURATION_MS = 3000;
 const REVEAL_LATENCY_MS = 450;
 
 const router = useRouter();
+const { t } = useI18n();
 const readingStore = useReadingStore();
 const settings = useSettingsStore();
 
@@ -106,21 +108,21 @@ function onKeyUp(e: KeyboardEvent) {
 const hintText = computed(() => {
   switch (phase.value) {
     case 'idle':
-      return '长按上方牌堆或此圆圈 3 秒开始洗牌';
+      return t('shuffle.hintIdle');
     case 'holding':
-      return progress.value >= 99 ? '洗牌完成 · 抽牌中…' : '保持专注，继续按住…';
+      return progress.value >= 99 ? t('shuffle.hintAlmost') : t('shuffle.hintHolding');
     case 'drawing':
-      return '牌灵已聆听你的问题…';
+      return t('shuffle.hintDrawing');
     case 'done':
-      return '抽牌完毕，即将翻开';
+      return t('shuffle.hintDone');
   }
   return '';
 });
 
 const progressLabel = computed(() => {
-  if (phase.value === 'idle') return '已洗：0% · 松手将重置';
-  if (phase.value === 'drawing' || phase.value === 'done') return '已洗：100% · 准备就绪';
-  return `已洗：${Math.floor(progress.value)}% · 请保持专注`;
+  if (phase.value === 'idle') return t('shuffle.progressIdle');
+  if (phase.value === 'drawing' || phase.value === 'done') return t('shuffle.progressReady');
+  return t('shuffle.progressDoing', { pct: Math.floor(progress.value) });
 });
 
 const isShuffling = computed(
@@ -131,10 +133,10 @@ const isShuffling = computed(
 <template>
   <section class="mx-auto w-full max-w-3xl px-md pt-2xl pb-2xl">
     <header class="mb-xl text-center">
-      <div class="text-xs uppercase tracking-[0.4em] text-primary">Step 3 / 4</div>
-      <h1 class="mt-sm font-display text-3xl tracking-wide md:text-4xl">长按屏幕开始洗牌</h1>
+      <div class="text-xs uppercase tracking-[0.4em] text-primary">{{ t('shuffle.pageLabel') }}</div>
+      <h1 class="mt-sm font-display text-3xl tracking-wide md:text-4xl">{{ t('shuffle.title') }}</h1>
       <p class="mt-sm text-sm text-muted-foreground">
-        深呼吸，将问题默念三次，把注意力交给此刻。
+        {{ t('shuffle.subtitle') }}
       </p>
     </header>
 
@@ -153,7 +155,7 @@ const isShuffling = computed(
         role="button"
         tabindex="0"
         :aria-pressed="phase === 'holding'"
-        :aria-label="phase === 'idle' ? '长按此处 3 秒开始洗牌' : '正在洗牌'"
+        :aria-label="phase === 'idle' ? t('shuffle.holdAria') : t('shuffle.holdingAria')"
         class="relative flex h-[260px] w-[220px] cursor-pointer select-none items-center justify-center outline-none touch-none md:h-[320px] md:w-[240px]"
         :class="phase !== 'idle' && 'pointer-events-none'"
         @pointerdown="startHold"
@@ -192,7 +194,7 @@ const isShuffling = computed(
     <div class="relative z-10 mb-lg flex items-center justify-center gap-md">
       <button
         type="button"
-        :aria-label="phase === 'idle' ? '长按此处 3 秒开始洗牌' : '正在洗牌'"
+        :aria-label="phase === 'idle' ? t('shuffle.holdAria') : t('shuffle.holdingAria')"
         :aria-pressed="phase === 'holding'"
         :disabled="phase === 'drawing' || phase === 'done'"
         class="relative flex h-12 w-12 cursor-pointer select-none items-center justify-center rounded-full border-2 border-primary/60 bg-background/40 outline-none transition touch-none hover:border-primary hover:bg-primary/10 hover:shadow-[0_0_18px_hsl(var(--primary)/0.45)] focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-default disabled:opacity-70 md:h-14 md:w-14"
@@ -239,7 +241,7 @@ const isShuffling = computed(
         class="text-xs text-muted-foreground"
         @click="finishHold"
       >
-        不方便长按？点此直接洗牌
+        {{ t('shuffle.fallbackButton') }}
       </Button>
     </div>
   </section>

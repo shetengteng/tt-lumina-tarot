@@ -108,17 +108,31 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  define: {
+    __VUE_I18N_FULL_INSTALL__: 'true',
+    __VUE_I18N_LEGACY_API__: 'false',
+    __INTLIFY_PROD_DEVTOOLS__: 'false',
+    __INTLIFY_JIT_COMPILATION__: 'false',
+  },
   server: {
     port: 5173,
     host: true,
   },
   build: {
     target: 'esnext',
+    cssCodeSplit: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vue: ['vue', 'vue-router', 'pinia'],
-          vueuse: ['@vueuse/core', '@vueuse/motion'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.match(/[\\/]node_modules[\\/](vue|vue-router|pinia|@vue)[\\/]/)) {
+              return 'vue';
+            }
+            if (id.includes('@vueuse')) return 'vueuse';
+            if (id.includes('vue-i18n') || id.includes('@intlify')) return 'i18n-runtime';
+            if (id.includes('fuse.js')) return 'fuse';
+            if (id.includes('radix-vue')) return 'radix';
+          }
         },
       },
     },
