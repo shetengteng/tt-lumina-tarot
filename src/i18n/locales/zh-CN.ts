@@ -354,6 +354,8 @@ export default {
     spreadLabel: '牌阵',
     waterMarkHint: '愿这张图，留住此刻的微光。',
     previewAlt: '占卜结果分享卡预览',
+    qrHint: '扫码探索你的塔罗时刻',
+    qrAlt: '扫码访问 Lumina Tarot',
   },
   footer: {
     tagline: '在黑暗中点亮内心微光',

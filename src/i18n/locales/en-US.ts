@@ -354,6 +354,8 @@ export default {
     spreadLabel: 'Spread',
     waterMarkHint: 'Let this image keep a sliver of the moment.',
     previewAlt: 'Reading share-card preview',
+    qrHint: 'Scan to begin your own reading',
+    qrAlt: 'Scan QR code to open Lumina Tarot',
   },
   footer: {
     tagline: 'A small light for the inner dark',

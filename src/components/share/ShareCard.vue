@@ -13,6 +13,7 @@ import type { ReadingRecord } from '@/types';
 
 const props = defineProps<{
   record: ReadingRecord;
+  qrDataUrl?: string | null;
 }>();
 
 const { t, locale } = useI18n();
@@ -143,6 +144,15 @@ const moodText = computed(() => moodLabel(props.record.mood));
 
     <footer class="sc-footer">
       <div class="sc-watermark">{{ t('share.waterMarkHint') }}</div>
+      <div v-if="qrDataUrl" class="sc-qr-block">
+        <img
+          :src="qrDataUrl"
+          :alt="t('share.qrAlt')"
+          class="sc-qr-img"
+          crossorigin="anonymous"
+        />
+        <div class="sc-qr-hint">{{ t('share.qrHint') }}</div>
+      </div>
       <div class="sc-brand-line">
         <span class="sc-brand-symbol-sm">◐</span> Lumina Tarot
       </div>
@@ -416,18 +426,45 @@ const moodText = computed(() => moodLabel(props.record.mood));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 32px;
   padding-top: 32px;
   border-top: 1px solid rgba(196, 152, 255, 0.25);
 }
 .sc-watermark {
+  flex: 1 1 0;
+  min-width: 0;
   font-size: 18px;
   color: rgba(220, 210, 255, 0.6);
   letter-spacing: 0.08em;
 }
+.sc-qr-block {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.sc-qr-img {
+  width: 132px;
+  height: 132px;
+  display: block;
+  background: rgb(255, 255, 255);
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+.sc-qr-hint {
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  color: rgba(220, 210, 255, 0.72);
+  text-align: center;
+}
 .sc-brand-line {
+  flex: 1 1 0;
+  min-width: 0;
   display: inline-flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
   font-size: 20px;
   color: rgb(232, 220, 255);

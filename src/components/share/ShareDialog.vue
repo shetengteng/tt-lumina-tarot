@@ -29,6 +29,7 @@ const cardRef = ref<HTMLElement | null>(null);
 const previewBlob = ref<Blob | null>(null);
 const previewUrl = ref<string | null>(null);
 const status = ref<'idle' | 'rendering' | 'ready' | 'failed'>('idle');
+const qrDataUrl = ref<string | null>(null);
 const toastMessage = ref<string | null>(null);
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -53,13 +54,27 @@ async function buildPreview() {
   releaseUrl();
   previewBlob.value = null;
   try {
+    const shareMod = await loadShareModule();
+    const siteUrl = shareMod.getShareSiteUrl();
+    if (siteUrl) {
+      try {
+        qrDataUrl.value = await shareMod.generateQrSvgDataUrl(siteUrl, { size: 240 });
+      } catch (qrErr) {
+        console.warn('[share] QR generation failed', qrErr);
+        qrDataUrl.value = null;
+      }
+    } else {
+      qrDataUrl.value = null;
+    }
     await nextTick();
     await waitForFonts();
     await waitForImages(cardRef.value);
-    const { renderNodeToBlob, blobToObjectUrl } = await loadShareModule();
-    const blob = await renderNodeToBlob(cardRef.value, { scale: 2, background: '#0e0a1a' });
+    const blob = await shareMod.renderNodeToBlob(cardRef.value, {
+      scale: 2,
+      background: '#0e0a1a',
+    });
     previewBlob.value = blob;
-    previewUrl.value = blobToObjectUrl(blob);
+    previewUrl.value = shareMod.blobToObjectUrl(blob);
     status.value = 'ready';
   } catch (err) {
     console.error('[share] render failed', err);
@@ -142,6 +157,7 @@ watch(
     } else if (!v) {
       releaseUrl();
       previewBlob.value = null;
+      qrDataUrl.value = null;
       status.value = 'idle';
     }
   }
@@ -229,7 +245,7 @@ const showCanShare = computed(() => {
 
         <div class="share-render-host" aria-hidden="true">
           <div ref="cardRef" class="share-render-stage">
-            <ShareCard v-if="record" :record="record" />
+            <ShareCard v-if="record" :record="record" :qr-data-url="qrDataUrl" />
           </div>
         </div>
       </div>

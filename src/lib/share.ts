@@ -8,6 +8,49 @@ export interface ShareImageOptions {
 
 export type ShareOutcome = 'shared' | 'downloaded' | 'cancelled' | 'failed';
 
+export interface QrOptions {
+  size?: number;
+  padding?: number;
+  color?: string;
+  background?: string;
+  ecl?: 'L' | 'M' | 'Q' | 'H';
+}
+
+/**
+ * Generate a base64-encoded SVG data URL for the given URL.
+ * Uses base64 (not raw utf-8) so html2canvas can reliably embed the QR
+ * as an <img> source during share-card rendering.
+ */
+export async function generateQrSvgDataUrl(
+  url: string,
+  opts: QrOptions = {}
+): Promise<string> {
+  const QRCodeSvg = (await import('qrcode-svg')).default;
+  const svg = new QRCodeSvg({
+    content: url,
+    width: opts.size ?? 240,
+    height: opts.size ?? 240,
+    padding: opts.padding ?? 1,
+    color: opts.color ?? '#0e0a1a',
+    background: opts.background ?? '#ffffff',
+    ecl: opts.ecl ?? 'M',
+    join: true,
+  }).svg();
+
+  const utf8 = unescape(encodeURIComponent(svg));
+  return `data:image/svg+xml;base64,${btoa(utf8)}`;
+}
+
+/**
+ * Compute the canonical site entry URL (origin + Vite BASE_URL) for sharing.
+ * Returns an empty string when no window is available (SSR / build-time).
+ */
+export function getShareSiteUrl(): string {
+  if (typeof window === 'undefined') return '';
+  const base = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
+  return `${window.location.origin}${base}/`;
+}
+
 /**
  * Render a DOM node into a PNG Blob using html2canvas.
  * - Uses 2x scale by default (Retina-friendly).
