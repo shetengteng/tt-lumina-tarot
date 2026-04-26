@@ -12,6 +12,7 @@ import { useCardI18n } from '@/composables/useCardI18n';
 import { useTarotI18n } from '@/composables/useTarotI18n';
 import type { TarotCardDef } from '@/types';
 import { getDailyDraw, putDailyDraw } from '@/lib/db';
+import { generateQrSvgDataUrl, getShareSiteUrl } from '@/lib/share';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -217,8 +218,22 @@ const latestFirstCard = computed(() => {
   return { card, reversed: drawn.reversed };
 });
 
+const shareUrl = ref('');
+const shareQrDataUrl = ref('');
+
+async function loadShareQr() {
+  try {
+    shareUrl.value = getShareSiteUrl();
+    if (!shareUrl.value) return;
+    shareQrDataUrl.value = await generateQrSvgDataUrl(shareUrl.value, { size: 240 });
+  } catch {
+    /* ignore qr generation errors – footer just stays in placeholder */
+  }
+}
+
 onMounted(() => {
   void loadOrGenerateDaily();
+  void loadShareQr();
 });
 
 onBeforeUnmount(() => {
@@ -413,6 +428,41 @@ onBeforeUnmount(() => {
         </button>
       </div>
     </article>
+
+    <!-- 站点分享 footer -->
+    <footer
+      class="my-2xl flex flex-col items-center gap-md rounded-xl border border-border/70 bg-card/60 p-lg backdrop-blur-sm sm:flex-row sm:items-center sm:justify-center sm:gap-xl sm:p-xl"
+    >
+      <div class="qr-tile shrink-0 rounded-lg bg-white p-sm shadow-sm">
+        <img
+          v-if="shareQrDataUrl"
+          :src="shareQrDataUrl"
+          :alt="t('home.shareFooterTitle')"
+          width="120"
+          height="120"
+          class="block h-[120px] w-[120px]"
+        />
+        <div
+          v-else
+          class="h-[120px] w-[120px] animate-pulse rounded-md bg-muted"
+          aria-hidden="true"
+        />
+      </div>
+      <div class="text-center sm:max-w-[260px] sm:text-left">
+        <p class="font-display text-base text-foreground">
+          {{ t('home.shareFooterTitle') }}
+        </p>
+        <p class="mt-xs text-xs leading-relaxed text-muted-foreground">
+          {{ t('home.shareFooterDesc') }}
+        </p>
+        <p
+          v-if="shareUrl"
+          class="mt-sm break-all font-mono text-[11px] text-muted-foreground/80"
+        >
+          {{ shareUrl }}
+        </p>
+      </div>
+    </footer>
   </section>
 </template>
 

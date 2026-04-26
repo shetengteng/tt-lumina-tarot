@@ -57,6 +57,8 @@ export default {
     emptyHistory: 'No readings yet. Let today be the day you first speak with the cards.',
     startFirstReading: 'Start your first reading →',
     defaultReading: 'Reading',
+    shareFooterTitle: 'Share the light',
+    shareFooterDesc: 'Scan the code or share the link—invite a friend into this tarot study.',
   },
   spread: {
     pageLabel: 'STEP 1 / 4',

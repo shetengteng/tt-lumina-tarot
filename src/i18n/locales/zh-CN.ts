@@ -57,6 +57,8 @@ export default {
     emptyHistory: '还没有记录。让今天成为你第一次与塔罗对话的日子。',
     startFirstReading: '开启首次占卜 →',
     defaultReading: '占卜',
+    shareFooterTitle: '把光带给朋友',
+    shareFooterDesc: '扫码或分享网址，让更多人遇见这片塔罗剧场。',
   },
   spread: {
     pageLabel: 'STEP 1 / 4',
