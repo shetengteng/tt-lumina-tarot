@@ -115,6 +115,126 @@ spacing: {
 | `pnpm verify:pwa` | 校验 manifest / SW / 图标完整性 |
 | `pnpm decks:download` | 下载并归一化卡面资源到 `public/decks/` |
 
+## 部署到 GitHub
+
+本项目用 `createWebHashHistory` 路由 + 纯前端构建，**天然适配 GitHub Pages**（不需要 404 fallback，URL 形如 `…/#/library`）。下面给出从"零仓库"到"线上可访问"的完整流程。
+
+### 1. 推送源码到 GitHub
+
+```bash
+# 在 GitHub 上创建空仓库（不要勾选 README / .gitignore / LICENSE，避免冲突）
+git init                                           # 已经是 git 仓库可跳过
+git remote add origin git@github.com:<user>/tt-lumina-tarot.git
+git branch -M main
+git push -u origin main
+```
+
+> `release/` 与 `raw-assets/` 已在 `.gitignore` 中，不会被推送（包含可能受版权保护的本地资源）。
+
+### 2. 部署到 GitHub Pages（项目页 · 子路径）
+
+GitHub Pages 项目页的 URL 形如 `https://<user>.github.io/tt-lumina-tarot/`，需要在 **三处** 把基础路径从 `/` 改为 `/tt-lumina-tarot/`：
+
+**① `vite.config.ts` — 加 `base`：**
+
+```ts
+export default defineConfig({
+  base: process.env.GITHUB_PAGES === 'true' ? '/tt-lumina-tarot/' : '/',
+  // ...其余配置不变
+});
+```
+
+**② 同文件 `VitePWA({ manifest })` — 同步 `id` / `start_url` / `scope` 与 icon 路径：**
+
+```ts
+manifest: {
+  id: '/tt-lumina-tarot/',
+  start_url: '/tt-lumina-tarot/',
+  scope: '/tt-lumina-tarot/',
+  icons: [
+    { src: 'img/icon-192.png',          sizes: '192x192', type: 'image/png', purpose: 'any' },
+    { src: 'img/icon-512.png',          sizes: '512x512', type: 'image/png', purpose: 'any' },
+    { src: 'img/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+    { src: 'pwa-icon.svg',              sizes: 'any',     type: 'image/svg+xml', purpose: 'any' },
+  ],
+  // shortcuts.url 也要改成 './' 或 '/tt-lumina-tarot/...'
+},
+workbox: {
+  navigateFallback: '/tt-lumina-tarot/index.html',
+  // 其余 workbox 选项不变
+},
+```
+
+> 仅在用 `GITHUB_PAGES=true` 构建时生效，本地 `pnpm dev` / 默认 `pnpm build` 仍然走根路径，互不干扰。
+
+**③ 新增 `.github/workflows/deploy.yml` — Actions 自动构建并发布：**
+
+```yaml
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        env:
+          GITHUB_PAGES: 'true'
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: dist }
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+### 3. 在 GitHub 仓库开启 Pages
+
+1. 进入仓库 **Settings → Pages**
+2. **Source** 选 **GitHub Actions**（不要选 "Deploy from a branch"）
+3. 推送任何到 `main` 的提交即触发构建；首次部署完成后访问：
+
+```
+https://<user>.github.io/tt-lumina-tarot/
+```
+
+### 4. 部署后自检清单
+
+- [ ] 首页能正常加载，`<head>` 中的资源 URL 都带 `/tt-lumina-tarot/` 前缀
+- [ ] 通过浏览器 DevTools → Application → Manifest 检查 PWA 可安装
+- [ ] 离线模式下刷新仍能进入 `#/library`、`#/history`
+- [ ] 卡面图（`/decks/rws/*.webp`、`/decks/aquatic/*.webp`）加载成功
+- [ ] Lighthouse 移动端 ≥ 90 分
+
+> 若使用 **自定义域名 / username.github.io 根仓库**，把上述 `'/tt-lumina-tarot/'` 全部改回 `'/'`、删掉 `GITHUB_PAGES` 判断即可。
+
 ## 已实装范围
 
 当前版本（v0.1）已包含：
