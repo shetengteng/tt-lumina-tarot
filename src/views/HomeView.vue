@@ -12,6 +12,7 @@ import { useCardI18n } from '@/composables/useCardI18n';
 import { useTarotI18n } from '@/composables/useTarotI18n';
 import type { TarotCardDef } from '@/types';
 import { getDailyDraw, putDailyDraw } from '@/lib/db';
+import { generateQrSvgDataUrl, getShareSiteUrl } from '@/lib/share';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -217,8 +218,22 @@ const latestFirstCard = computed(() => {
   return { card, reversed: drawn.reversed };
 });
 
+const shareUrl = ref('');
+const shareQrDataUrl = ref('');
+
+async function loadShareQr() {
+  try {
+    shareUrl.value = getShareSiteUrl();
+    if (!shareUrl.value) return;
+    shareQrDataUrl.value = await generateQrSvgDataUrl(shareUrl.value, { size: 200 });
+  } catch {
+    /* ignore – QR is decorative */
+  }
+}
+
 onMounted(() => {
   void loadOrGenerateDaily();
+  void loadShareQr();
 });
 
 onBeforeUnmount(() => {
@@ -413,6 +428,28 @@ onBeforeUnmount(() => {
         </button>
       </div>
     </article>
+
+    <!-- 站点分享二维码 · 小尺寸入口 -->
+    <div class="mt-xl mb-lg flex flex-col items-center gap-xs text-[11px] text-muted-foreground/80">
+      <div class="rounded-md bg-white p-xs shadow-sm">
+        <img
+          v-if="shareQrDataUrl"
+          :src="shareQrDataUrl"
+          :alt="t('home.shareFooterTitle')"
+          width="84"
+          height="84"
+          class="block h-[84px] w-[84px]"
+        />
+        <div
+          v-else
+          class="h-[84px] w-[84px] animate-pulse rounded-sm bg-muted"
+          aria-hidden="true"
+        />
+      </div>
+      <p v-if="shareUrl" class="break-all font-mono tracking-tight">
+        {{ shareUrl }}
+      </p>
+    </div>
   </section>
 </template>
 

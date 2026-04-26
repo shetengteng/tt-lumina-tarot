@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,6 +12,7 @@ import MinorIllustration from '@/components/tarot/MinorIllustration.vue';
 import { useSettingsStore } from '@/stores/settings';
 import { useReadingStore } from '@/stores/reading';
 import { assetUrl } from '@/lib/utils';
+import { generateQrSvgDataUrl, getShareSiteUrl } from '@/lib/share';
 import type {
   CardBackVariant,
   MinorIllustrationStyle,
@@ -112,6 +113,19 @@ async function exportJSON() {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+const shareUrl = ref('');
+const shareQrDataUrl = ref('');
+
+onMounted(async () => {
+  try {
+    shareUrl.value = getShareSiteUrl();
+    if (!shareUrl.value) return;
+    shareQrDataUrl.value = await generateQrSvgDataUrl(shareUrl.value, { size: 320 });
+  } catch {
+    /* ignore – section simply renders without QR */
+  }
+});
 </script>
 
 <template>
@@ -371,6 +385,46 @@ async function exportJSON() {
           <p class="pt-xs text-[11px] uppercase tracking-[0.3em] text-muted-foreground/60">
             {{ t('settings.aboutMeta') }}
           </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent class="space-y-md p-lg">
+          <div class="space-y-xs">
+            <Label>{{ t('home.shareFooterTitle') }}</Label>
+            <p class="text-sm text-muted-foreground">
+              {{ t('home.shareFooterDesc') }}
+            </p>
+          </div>
+          <Separator />
+          <div class="flex flex-col items-center gap-md sm:flex-row sm:items-center sm:gap-lg">
+            <div class="shrink-0 rounded-md bg-white p-sm shadow-sm">
+              <img
+                v-if="shareQrDataUrl"
+                :src="shareQrDataUrl"
+                :alt="t('home.shareFooterTitle')"
+                width="160"
+                height="160"
+                class="block h-[160px] w-[160px]"
+              />
+              <div
+                v-else
+                class="h-[160px] w-[160px] animate-pulse rounded-sm bg-muted"
+                aria-hidden="true"
+              />
+            </div>
+            <div class="min-w-0 flex-1 space-y-xs text-center sm:text-left">
+              <p class="text-[11px] uppercase tracking-[0.3em] text-muted-foreground/60">
+                Lumina Tarot
+              </p>
+              <p
+                v-if="shareUrl"
+                class="break-all font-mono text-xs text-foreground/80"
+              >
+                {{ shareUrl }}
+              </p>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
