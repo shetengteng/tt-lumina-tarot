@@ -163,7 +163,7 @@ const isShuffling = computed(
     </div>
 
     <!-- 长按触控区：牌堆扇形 -->
-    <div class="shuffle-stack-wrap relative z-20 mb-xl flex justify-center py-2xl">
+    <div class="shuffle-stack-wrap relative z-20 flex justify-center py-2xl">
       <div
         role="button"
         tabindex="0"
