@@ -11,7 +11,10 @@
     "type-check": "vue-tsc --noEmit",
     "icons:gen": "node scripts/generate-pwa-icons.mjs",
     "verify:pwa": "node scripts/verify-pwa.mjs",
-    "decks:download": "node scripts/download-decks.mjs"
+    "decks:download": "node scripts/download-decks.mjs",
+    "deploy:emas": "node scripts/emas-deploy.mjs",
+    "deploy:emas:upload": "node scripts/emas-deploy.mjs --no-build",
+    "deploy:emas:plan": "node scripts/emas-deploy.mjs --no-build --plan"
   },
   "dependencies": {
     "@tsparticles/engine": "^3.9.1",
@@ -42,6 +45,7 @@
     "@vitejs/plugin-vue": "^5.2.1",
     "autoprefixer": "^10.4.20",
     "chrome-remote-interface": "^0.34.0",
+    "playwright-core": "^1.59.1",
     "postcss": "^8.4.49",
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.17",

@@ -52,6 +52,10 @@ function openCard(cardId: string) {
   router.push({ name: 'card-detail', params: { id: cardId } });
 }
 
+function openDetail(id: string) {
+  router.push({ name: 'history-detail', params: { id } });
+}
+
 const isEmpty = computed(() => historySorted.value.length === 0);
 const totalCount = computed(() => historySorted.value.length);
 
@@ -208,13 +212,20 @@ function openShare(r: ReadingRecord) {
           </span>
         </div>
 
-        <h3 class="mb-xs font-display text-lg leading-snug tracking-wide">
-          <span class="text-primary">「</span>{{ r.question || t('history.unnamed') }}<span class="text-primary">」</span>
-        </h3>
+        <button
+          type="button"
+          class="history-headline-link block w-full text-left"
+          :aria-label="t('history.openDetailAria', { name: r.question || t('history.unnamed') })"
+          @click="openDetail(r.id)"
+        >
+          <h3 class="mb-xs font-display text-lg leading-snug tracking-wide transition group-hover:text-primary">
+            <span class="text-primary">「</span>{{ r.question || t('history.unnamed') }}<span class="text-primary">」</span>
+          </h3>
 
-        <p class="mb-md text-sm leading-relaxed text-muted-foreground">
-          {{ summaryOf(r) }}
-        </p>
+          <p class="mb-md text-sm leading-relaxed text-muted-foreground">
+            {{ summaryOf(r) }}
+          </p>
+        </button>
 
         <div class="flex items-end justify-between gap-md">
           <div class="flex flex-wrap gap-xs">
@@ -273,6 +284,14 @@ function openShare(r: ReadingRecord) {
           </div>
           <div class="flex shrink-0 flex-col items-end gap-xs">
             <Button
+              variant="outline"
+              size="sm"
+              class="text-xs"
+              @click="openDetail(r.id)"
+            >
+              {{ t('history.actionView') }}
+            </Button>
+            <Button
               variant="ghost"
               size="sm"
               class="text-xs text-muted-foreground hover:text-primary"
@@ -326,5 +345,19 @@ function openShare(r: ReadingRecord) {
 }
 .thumb-card {
   cursor: pointer;
+}
+.history-headline-link {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  appearance: none;
+  font: inherit;
+  color: inherit;
+}
+.history-headline-link:focus-visible {
+  outline: 2px solid hsl(var(--primary) / 0.6);
+  outline-offset: 4px;
+  border-radius: 6px;
 }
 </style>

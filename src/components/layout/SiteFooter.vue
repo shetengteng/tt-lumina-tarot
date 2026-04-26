@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import QrLightbox from '@/components/share/QrLightbox.vue';
 import { generateQrSvgDataUrl, getShareSiteUrl } from '@/lib/share';
 
 const shareUrl = ref('');
@@ -31,20 +32,28 @@ onMounted(async () => {
           Offline-first · Vue 3 · Tailwind · shadcn-vue
         </p>
       </div>
-      <div class="shrink-0 rounded-md bg-white p-[2px] shadow-sm">
-        <img
-          v-if="shareQrDataUrl"
-          :src="shareQrDataUrl"
-          alt=""
-          width="28"
-          height="28"
-          class="block h-[28px] w-[28px]"
-        />
-        <div
-          v-else
-          class="h-[28px] w-[28px] animate-pulse rounded-sm bg-muted"
-          aria-hidden="true"
-        />
+      <QrLightbox
+        v-if="shareQrDataUrl"
+        :qr-data-url="shareQrDataUrl"
+        :share-url="shareUrl"
+        trigger="inline"
+      >
+        <span class="block shrink-0 rounded-md bg-white p-[2px] shadow-sm">
+          <img
+            :src="shareQrDataUrl"
+            alt=""
+            width="28"
+            height="28"
+            class="block h-[28px] w-[28px]"
+          />
+        </span>
+      </QrLightbox>
+      <div
+        v-else
+        class="shrink-0 rounded-md bg-white p-[2px] shadow-sm"
+        aria-hidden="true"
+      >
+        <div class="h-[28px] w-[28px] animate-pulse rounded-sm bg-muted" />
       </div>
     </div>
   </footer>

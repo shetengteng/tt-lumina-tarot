@@ -57,6 +57,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '占卜历史', needsCards: true },
   },
   {
+    path: '/history/:id',
+    name: 'history-detail',
+    component: () => import('@/views/HistoryDetailView.vue'),
+    meta: { title: '占卜详情', needsCards: true },
+  },
+  {
     path: '/settings',
     name: 'settings',
     component: () => import('@/views/SettingsView.vue'),

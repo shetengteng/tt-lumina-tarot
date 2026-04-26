@@ -3,7 +3,13 @@ import vue from '@vitejs/plugin-vue';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'node:path';
 
-const base = process.env.GITHUB_PAGES === 'true' ? '/tt-lumina-tarot/' : '/';
+function resolveBase(): string {
+  if (process.env.EMAS_DEPLOY === 'true') return '/tarot/';
+  if (process.env.GITHUB_PAGES === 'true') return '/tt-lumina-tarot/';
+  return '/';
+}
+
+const base = resolveBase();
 
 export default defineConfig({
   base,

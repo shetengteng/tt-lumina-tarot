@@ -155,6 +155,8 @@ export default {
     actionClear: '清空',
     actionNew: '新的占卜',
     actionShare: '分享',
+    actionView: '查看详情',
+    openDetailAria: '查看「{name}」的详情',
     unnamed: '未命名占卜',
     periodToday: '今天',
     periodYesterday: '昨天',
@@ -163,6 +165,12 @@ export default {
     summaryMultiple: '{count} 张牌 — 依次：{names}{more}',
     summaryMore: '…等 {count} 张',
     cardOpenAria: '查看 {name}{rev}',
+  },
+  historyDetail: {
+    pageLabel: 'READING',
+    backToHistory: '← 返回历史',
+    saveNote: '保存笔记',
+    noteSaved: '笔记已保存',
   },
   library: {
     pageLabel: 'LIBRARY',
@@ -358,6 +366,12 @@ export default {
     previewAlt: '占卜结果分享卡预览',
     qrHint: '扫码探索你的塔罗时刻',
     qrAlt: '扫码访问 Lumina Tarot',
+  },
+  qrLightbox: {
+    title: '扫码访问 Lumina Tarot',
+    closeAria: '关闭二维码',
+    expandAria: '点击放大二维码',
+    openLink: '直接打开链接',
   },
   footer: {
     tagline: '在黑暗中点亮内心微光',

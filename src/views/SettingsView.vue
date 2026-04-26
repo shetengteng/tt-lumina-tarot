@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import ThemePicker from '@/components/layout/ThemePicker.vue';
 import CardBackPattern from '@/components/tarot/CardBackPattern.vue';
 import MinorIllustration from '@/components/tarot/MinorIllustration.vue';
+import QrLightbox from '@/components/share/QrLightbox.vue';
 import { useSettingsStore } from '@/stores/settings';
 import { useReadingStore } from '@/stores/reading';
 import { assetUrl } from '@/lib/utils';
@@ -399,17 +400,27 @@ onMounted(async () => {
           </div>
 
           <div class="flex flex-col items-center gap-md sm:flex-row sm:items-center sm:gap-lg">
-            <div class="shrink-0 rounded-md bg-white p-sm shadow-md ring-1 ring-border/40">
-              <img
-                v-if="shareQrDataUrl"
-                :src="shareQrDataUrl"
-                alt=""
-                width="132"
-                height="132"
-                class="block h-[132px] w-[132px]"
-              />
+            <QrLightbox
+              v-if="shareQrDataUrl"
+              :qr-data-url="shareQrDataUrl"
+              :share-url="shareUrl"
+              trigger="inline"
+            >
+              <span class="block shrink-0 rounded-md bg-white p-sm shadow-md ring-1 ring-border/40">
+                <img
+                  :src="shareQrDataUrl"
+                  alt=""
+                  width="132"
+                  height="132"
+                  class="block h-[132px] w-[132px]"
+                />
+              </span>
+            </QrLightbox>
+            <div
+              v-else
+              class="shrink-0 rounded-md bg-white p-sm shadow-md ring-1 ring-border/40"
+            >
               <div
-                v-else
                 class="h-[132px] w-[132px] animate-pulse rounded-sm bg-muted"
                 aria-hidden="true"
               />

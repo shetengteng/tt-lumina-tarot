@@ -235,6 +235,105 @@ https://<user>.github.io/tt-lumina-tarot/
 
 > 若使用 **自定义域名 / username.github.io 根仓库**，把上述 `'/tt-lumina-tarot/'` 全部改回 `'/'`、删掉 `GITHUB_PAGES` 判断即可。
 
+## 部署到阿里云 EMAS Serverless 静态托管（`/tarot/` 子路径）
+
+线上效果：`https://static-mp-<uuid>.next.bspapp.com/tarot/`，与同 ProductId 下其它子站（如 `/qimen/`）并存。
+
+### 0. 关于 EMAS 静态托管的几个**实测结论**（决定整套部署方案）
+
+1. **它本质是 OSS + CDN**：上传什么文件就直接服务什么文件，**不会自动解压 ZIP**。
+2. **控制台 UI 的两个坑**：
+   - 单次"上传文件"按钮一次最多选 **99 个**文件；
+   - 上传时**不会保留目录结构**，全部平铺到当前目录 —— 子目录必须**事先手动创建**好。
+3. **错误文档（ErrorPath）只接受根目录下的单个文件名**，不能填 `tarot/index.html`（会报 `InvalidErrorPath`）。
+4. 本项目使用 **`createWebHashHistory`**（`#/library`、`#/history`），**根本不需要任何服务端 fallback**：所有路由共用同一份 `tarot/index.html`，浏览器自己分发 hash 段。
+
+正因为以上几点 + EMAS 没有官方 CLI（`emas-serverless` 包不存在），所以一次性手工上传 200+ 文件极易出错。本仓库内置了一个 **Playwright 驱动控制台自动化的部署脚本** [`scripts/emas-deploy.mjs`](./scripts/emas-deploy.mjs)，并暴露 `pnpm deploy:emas` 一键命令。
+
+### 1. 一次性环境准备（首次部署或新机器才需要）
+
+```bash
+pnpm install
+pnpm exec playwright install chromium       # 安装 Chromium 浏览器
+```
+
+> `playwright-core` 已在 `devDependencies` 中。脚本会自动用 `~/.cache/lumina-tarot-emas/` 做持久化用户目录，登录态只需在第一次部署时手动登录一次。
+
+### 2. 一键部署
+
+```bash
+pnpm deploy:emas
+```
+
+这条命令会自动：
+
+1. 用 `EMAS_DEPLOY=true` 重新跑 `pnpm build` —— `vite.config.ts` 通过 `resolveBase()` 卫语句切换 `base = '/tarot/'`、PWA manifest 的 `id`/`start_url`/`scope`/`navigateFallback` 也会跟着切。
+2. 启动 Chromium 打开 EMAS 控制台。**首次运行**：请在弹出的浏览器中完成阿里云 SSO 登录，并停留在 ProductId=3916496 的"静态托管"页面。脚本会等待最多 120s。后续运行：登录态已保存，不需要再次登录。
+3. 按计划在 EMAS 上**幂等地**确保以下目录存在（已存在则跳过）：
+   ```
+   tarot/
+   ├── img/
+   ├── assets/
+   └── decks/
+       ├── rws/
+       └── aquatic/
+   ```
+4. 按目录顺序、每批 ≤ 50 个、把 `dist/` 内的所有文件批量上传。同名文件会自动确认覆盖（适合迭代部署）。
+5. 完成后打印线上访问地址和自检清单。
+
+### 3. 子命令与环境变量
+
+| 命令 / 变量 | 说明 |
+|-|-|
+| `pnpm deploy:emas` | 全流程：构建 + 创建目录 + 上传 |
+| `pnpm deploy:emas:upload` | 跳过构建（`--no-build`），直接上传现有 `dist/` |
+| `pnpm deploy:emas:plan` | dry-run，仅打印部署计划，不启动浏览器（用来快速核对文件数） |
+| `PHASE=folders pnpm deploy:emas` | 仅创建目录，不上传 |
+| `PHASE=upload pnpm deploy:emas` | 仅上传，不动目录 |
+| `START_STEP=3 START_BATCH=2 PHASE=upload pnpm deploy:emas:upload` | 从第 3 个目录的第 2 批继续（中途失败时断点续传） |
+| `KEEP_OPEN=1 pnpm deploy:emas` | 部署结束后保留浏览器，便于手动核对 |
+| `HEADLESS=1 pnpm deploy:emas` | 无头模式（**首次登录请勿加**） |
+
+部署计划编号（`START_STEP`）：
+
+```
+[0] tarot/            ← dist 根目录的 index.html / sw.js / manifest.webmanifest 等
+[1] tarot/assets/     ← Vite 产物：JS/CSS chunk
+[2] tarot/img/        ← PWA 图标 / 截图
+[3] tarot/decks/rws/      ← 78 张韦特牌 webp
+[4] tarot/decks/aquatic/  ← 78 张水彩牌 webp
+```
+
+### 4. 上传后的访问与验证
+
+线上根 URL：
+
+```
+https://static-mp-<uuid>.next.bspapp.com/tarot/
+```
+
+自检清单：
+
+- [ ] 访问 `…/tarot/` 进入"今日仪式"首页，DevTools Network 无 404、资源都从 `/tarot/...` 加载
+- [ ] 切到 **图鉴 / Library** → 78 张牌卡面（`tarot/decks/rws/*.webp`）正常显示
+- [ ] **设置 / Settings**：切换"卡面风格 → 经典韦特"，回 Library 看到真实 RWS 牌面
+- [ ] 刷新 `…/tarot/#/library`、`…/tarot/#/history` 仍正确渲染（hash 路由无需服务端 fallback）
+- [ ] DevTools → Application → Manifest 显示 `start_url = /tarot/`、`scope = /tarot/`
+- [ ] Service Worker 注册成功；离线刷新仍可用
+
+### 5. 跟"标准静态托管"的差异速查
+
+| 项 | EMAS 静态托管 | Vercel / Netlify |
+|---|---|---|
+| 部署单位 | 单个文件，OSS 风格 | 整个目录树自动同步 |
+| 子目录上传 | 必须先**手工建文件夹** | 自动按目录树创建 |
+| ZIP 处理 | **不解压**，当普通文件 | 通常不需要 |
+| ErrorDocument | 仅根目录文件名 | 任意路径 |
+| SPA fallback | hash 路由可**不配** | 内置 `try_files` 等价物 |
+| CLI / API | **没有** | 一等公民 |
+
+> 如果将来同 ProductId 还要承载 history-mode 项目，建议为它**单开一个根目录站点**，或迁移到 OSS + CDN（错误页可指向任意路径）。
+
 ## 已实装范围
 
 当前版本（v0.1）已包含：

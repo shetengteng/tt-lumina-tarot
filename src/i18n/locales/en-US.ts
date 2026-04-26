@@ -155,6 +155,8 @@ export default {
     actionClear: 'Clear',
     actionNew: 'New reading',
     actionShare: 'Share',
+    actionView: 'View details',
+    openDetailAria: 'Open details for “{name}”',
     unnamed: 'Untitled reading',
     periodToday: 'Today',
     periodYesterday: 'Yesterday',
@@ -163,6 +165,12 @@ export default {
     summaryMultiple: '{count} cards — in order: {names}{more}',
     summaryMore: '… +{count} cards',
     cardOpenAria: 'Open {name}{rev}',
+  },
+  historyDetail: {
+    pageLabel: 'READING',
+    backToHistory: '← Back to history',
+    saveNote: 'Save note',
+    noteSaved: 'Note saved',
   },
   library: {
     pageLabel: 'LIBRARY',
@@ -358,6 +366,12 @@ export default {
     previewAlt: 'Reading share-card preview',
     qrHint: 'Scan to begin your own reading',
     qrAlt: 'Scan QR code to open Lumina Tarot',
+  },
+  qrLightbox: {
+    title: 'Scan to open Lumina Tarot',
+    closeAria: 'Close QR code',
+    expandAria: 'Tap to enlarge QR code',
+    openLink: 'Open link directly',
   },
   footer: {
     tagline: 'A small light for the inner dark',
