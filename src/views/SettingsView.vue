@@ -189,7 +189,7 @@ async function exportJSON() {
                   v-if="opt.id !== 'minimal'"
                   :src="opt.preview"
                   alt=""
-                  class="h-full w-full object-cover"
+                  class="h-full w-full scale-[1.2] object-cover"
                   decoding="async"
                   loading="lazy"
                 />
