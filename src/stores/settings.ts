@@ -10,6 +10,7 @@ import type {
   EffectiveCardBack,
 } from '@/types';
 import { initialLocale, setI18nLocale, SUPPORTED_LOCALES } from '@/i18n';
+import { assetUrl } from '@/lib/utils';
 
 const STORAGE_KEY = 'lumina-theme';
 const REDUCED_MOTION_KEY = 'lumina-reduced-motion';
@@ -149,10 +150,10 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const effectiveCardBack = computed<EffectiveCardBack>(() => {
     if (cardArtTheme.value === 'rws') {
-      return { kind: 'image', src: '/decks/rws/_back.webp' };
+      return { kind: 'image', src: assetUrl('/decks/rws/_back.webp') };
     }
     if (cardArtTheme.value === 'aquatic') {
-      return { kind: 'image', src: '/decks/aquatic/_back.webp' };
+      return { kind: 'image', src: assetUrl('/decks/aquatic/_back.webp') };
     }
     return { kind: 'svg', variant: cardBack.value };
   });

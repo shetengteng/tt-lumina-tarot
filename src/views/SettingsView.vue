@@ -11,6 +11,7 @@ import CardBackPattern from '@/components/tarot/CardBackPattern.vue';
 import MinorIllustration from '@/components/tarot/MinorIllustration.vue';
 import { useSettingsStore } from '@/stores/settings';
 import { useReadingStore } from '@/stores/reading';
+import { assetUrl } from '@/lib/utils';
 import type {
   CardBackVariant,
   MinorIllustrationStyle,
@@ -70,17 +71,17 @@ const CARD_ART_THEME_OPTIONS = computed<Array<{
   {
     id: 'minimal',
     name: t('settings.cardArtMinimal'),
-    preview: '/img/card-theme-preview-minimal.webp',
+    preview: assetUrl('/img/card-theme-preview-minimal.webp'),
   },
   {
     id: 'rws',
     name: t('settings.cardArtRws'),
-    preview: '/decks/rws/fool.webp',
+    preview: assetUrl('/decks/rws/fool.webp'),
   },
   {
     id: 'aquatic',
     name: t('settings.cardArtAquatic'),
-    preview: '/decks/aquatic/fool.webp',
+    preview: assetUrl('/decks/aquatic/fool.webp'),
   },
 ]);
 

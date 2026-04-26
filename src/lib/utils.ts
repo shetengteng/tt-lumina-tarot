@@ -81,3 +81,17 @@ export function uid(prefix = 'id'): string {
   if (rand) return `${prefix}_${rand}`;
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
+
+/**
+ * 把 `public/` 下的资源相对路径解析为带 vite base 前缀的绝对 URL。
+ * 用于代码里硬编码的图片/资源路径（vite 的 base 配置只改写 HTML/JS/CSS
+ * 中由打包器解析的引用，不会改写运行时字符串字面量）。
+ *
+ * 示例（BASE_URL='/tt-lumina-tarot/'）:
+ *   assetUrl('/decks/rws/fool.webp')  -> '/tt-lumina-tarot/decks/rws/fool.webp'
+ *   assetUrl('img/icon-192.png')      -> '/tt-lumina-tarot/img/icon-192.png'
+ */
+export function assetUrl(path: string): string {
+  const base = import.meta.env.BASE_URL || '/';
+  return `${base}${path.replace(/^\/+/, '')}`;
+}

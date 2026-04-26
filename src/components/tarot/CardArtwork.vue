@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import type { TarotCardDef, MinorIllustrationStyle, CardArtTheme } from '@/types';
+import { assetUrl } from '@/lib/utils';
 import MinorIllustration from './MinorIllustration.vue';
 
 const props = withDefaults(
@@ -16,8 +17,8 @@ const props = withDefaults(
 const failed = ref(false);
 
 const imageSrc = computed(() => {
-  if (props.theme === 'rws') return `/decks/rws/${props.card.id}.webp`;
-  if (props.theme === 'aquatic') return `/decks/aquatic/${props.card.id}.webp`;
+  if (props.theme === 'rws') return assetUrl(`/decks/rws/${props.card.id}.webp`);
+  if (props.theme === 'aquatic') return assetUrl(`/decks/aquatic/${props.card.id}.webp`);
   return null;
 });
 
