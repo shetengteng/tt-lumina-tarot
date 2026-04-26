@@ -121,25 +121,46 @@ async function ensureBrowser() {
 }
 
 async function gotoConsole(page) {
-  if (!page.url().includes('serverless/app/static')) {
+  if (!page.url().includes('platformService/serverless')) {
     log(`跳转到控制台 ${CONFIG.EMAS_URL}`);
     await page.goto(CONFIG.EMAS_URL, { waitUntil: 'domcontentloaded' });
   }
   log('等待登录态... (若浏览器弹窗显示登录页，请在窗口中完成 Aliyun SSO 登录)');
   for (let i = 0; i < 60; i++) {
-    if (page.url().includes('serverless/app/static')) break;
+    if (page.url().includes('platformService/serverless')) break;
     await page.waitForTimeout(2000);
   }
-  if (!page.url().includes('serverless/app/static')) {
+  if (!page.url().includes('platformService/serverless')) {
     throw new Error('120s 内未检测到 EMAS 控制台页面，请手动登录后再次运行此脚本。');
   }
   await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(2000);
+
+  if (!page.url().includes('serverless/app/static')) {
+    log('当前在 EMAS Serverless 概览页，主动跳转「静态网站托管」');
+    await page.getByRole('menuitem', { name: '静态网站托管' }).click({ timeout: 30_000 });
+    for (let i = 0; i < 30; i++) {
+      if (page.url().includes('serverless/app/static')) break;
+      await page.waitForTimeout(1000);
+    }
+    if (!page.url().includes('serverless/app/static')) {
+      throw new Error('点击「静态网站托管」后 30s 内未跳转到 /app/static');
+    }
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(2500);
+  }
 }
 
 async function getEmasFrame(page) {
   for (let i = 0; i < 30; i++) {
-    const f = page.frames().find((fr) => fr.url().includes('serverless/app/static'));
+    const f = page
+      .frames()
+      .find(
+        (fr) =>
+          fr.url().includes('mpserverlessnew.console.aliyun.com') ||
+          fr.url().includes('mpserverless') ||
+          (fr.name() === '' && fr.parentFrame() === page.mainFrame() && fr.url().includes('app/static'))
+      );
     if (f) return f;
     await page.waitForTimeout(1000);
   }
@@ -149,13 +170,19 @@ async function getEmasFrame(page) {
 
 async function gotoBreadcrumb(page, frame, crumbs) {
   log(`  导航 -> ${crumbs.join(' / ')}`);
-  await frame.locator(`text=${CONFIG.ROOT_LABEL}`).first().click({ timeout: 30_000 });
-  await page.waitForTimeout(800);
+  const bc = frame.getByRole('navigation', { name: 'Breadcrumb' });
+  await bc.waitFor({ state: 'visible', timeout: 30_000 });
+  const root = bc.getByText(CONFIG.ROOT_LABEL, { exact: true });
+  if ((await root.count()) > 0) {
+    await root.first().click({ timeout: 30_000 });
+    await page.waitForTimeout(800);
+  }
   for (let i = 1; i < crumbs.length; i++) {
     const name = crumbs[i];
-    const link = frame.getByText(`${name}/`, { exact: true }).first();
+    const link = frame.getByRole('row').getByText(`${name}/`, { exact: true }).first();
+    await link.waitFor({ state: 'visible', timeout: 30_000 });
     await link.click({ timeout: 30_000 });
-    await page.waitForTimeout(700);
+    await page.waitForTimeout(900);
   }
 }
 
@@ -163,7 +190,9 @@ async function ensureFolder(page, frame, parentCrumbs, name) {
   const fullPath = [...parentCrumbs.slice(1), name].join('/');
   log(`📁 ensure ${fullPath}`);
   await gotoBreadcrumb(page, frame, parentCrumbs);
-  const exists = (await frame.getByText(`${name}/`, { exact: true }).count()) > 0;
+  await page.waitForTimeout(600);
+  const exists =
+    (await frame.getByRole('row').getByText(`${name}/`, { exact: true }).count()) > 0;
   if (exists) {
     log(`   ↳ already exists, skip`);
     return;
