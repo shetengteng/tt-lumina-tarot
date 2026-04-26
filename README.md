@@ -257,7 +257,7 @@ pnpm install
 pnpm exec playwright install chromium       # 安装 Chromium 浏览器
 ```
 
-> `playwright-core` 已在 `devDependencies` 中。脚本会自动用 `~/.cache/lumina-tarot-emas/` 做持久化用户目录，登录态只需在第一次部署时手动登录一次。
+> `playwright-core` 已在 `devDependencies` 中。脚本采用 **storage-state 模式**：第一次部署完成 SSO 登录后，cookies + localStorage 会被一并存到 `~/.cache/lumina-tarot-emas/storage-state.json`，后续部署直接复用该文件，**不会反复弹登录页**。
 
 ### 2. 一键部署
 
@@ -268,7 +268,7 @@ pnpm deploy:emas
 这条命令会自动：
 
 1. 用 `EMAS_DEPLOY=true` 重新跑 `pnpm build` —— `vite.config.ts` 通过 `resolveBase()` 卫语句切换 `base = '/tarot/'`、PWA manifest 的 `id`/`start_url`/`scope`/`navigateFallback` 也会跟着切。
-2. 启动 Chromium 打开 EMAS 控制台。**首次运行**：请在弹出的浏览器中完成阿里云 SSO 登录，并停留在 ProductId=3916496 的"静态托管"页面。脚本会等待最多 120s。后续运行：登录态已保存，不需要再次登录。
+2. 启动 Chromium 打开 EMAS 控制台。**首次运行**：脚本会自动检测到登录页，请在弹出的浏览器中完成阿里云 SSO 登录、并跳到 ProductId=3916496 的"静态托管"页面。脚本会等待最多 180s 并在登录成功后**自动写入 `storage-state.json`**。后续运行：直接加载该文件，免登录。如果某次部署时 token 过期被踢回登录页，重新登录一次即可，脚本会自动覆盖更新该文件。
 3. 按计划在 EMAS 上**幂等地**确保以下目录存在（已存在则跳过）：
    ```
    tarot/
@@ -293,6 +293,7 @@ pnpm deploy:emas
 | `START_STEP=3 START_BATCH=2 PHASE=upload pnpm deploy:emas:upload` | 从第 3 个目录的第 2 批继续（中途失败时断点续传） |
 | `KEEP_OPEN=1 pnpm deploy:emas` | 部署结束后保留浏览器，便于手动核对 |
 | `HEADLESS=1 pnpm deploy:emas` | 无头模式（**首次登录请勿加**） |
+| `FRESH_LOGIN=1 pnpm deploy:emas` | 删除缓存的 `storage-state.json`，强制重新登录（更换 Aliyun 账号或登录态损坏时使用） |
 
 部署计划编号（`START_STEP`）：
 

@@ -17,15 +17,18 @@
  *   PHASE=upload  pnpm deploy:emas   # 仅上传
  *   START_STEP=2 START_BATCH=1 pnpm deploy:emas    # 从指定断点恢复
  *   HEADLESS=1    pnpm deploy:emas   # 无头模式（首次登录请勿用）
+ *   FRESH_LOGIN=1 pnpm deploy:emas   # 强制忽略缓存的 storage state，重新登录
  *
- * 第一次运行：
- *   会启动一个独立的 Chromium，自动跳转到 EMAS 控制台。
- *   请在弹出的浏览器里完成阿里云 SSO 登录、并进入 ProductId=3916496 的「静态托管」页面。
- *   登录态会缓存到 ~/.cache/lumina-tarot-emas/，下次免登录。
+ * 登录态机制（隐式 SSO 复用）：
+ *   - 首次运行：启动 Chromium，自动跳转 EMAS 控制台。请完成阿里云 SSO 登录。
+ *     脚本检测到登录成功后，会把 cookies + localStorage 一并存到
+ *     ~/.cache/lumina-tarot-emas/storage-state.json
+ *   - 后续运行：自动加载该文件 → 直接进入控制台，无需再登录。
+ *   - 如果 token 过期被踢回登录页，请重新登录一次；脚本会自动覆盖更新 state 文件。
  */
 
 import { spawn } from 'node:child_process';
-import { readdirSync, statSync, existsSync } from 'node:fs';
+import { readdirSync, statSync, existsSync, unlinkSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -34,16 +37,20 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, '..');
 
+const CACHE_DIR = join(homedir(), '.cache', 'lumina-tarot-emas');
+
 const CONFIG = {
   EMAS_URL:
     'https://emas.console.aliyun.com/emasService/platformService/serverless/app/static?ProductId=3916496',
   PUBLIC_URL: 'https://static-mp-7cc0e56a-b5a1-4347-8a40-f3868127df92.next.bspapp.com/tarot/',
-  USER_DATA_DIR: join(homedir(), '.cache', 'lumina-tarot-emas'),
+  CACHE_DIR,
+  STORAGE_STATE_FILE: join(CACHE_DIR, 'storage-state.json'),
   DIST: join(REPO_ROOT, 'dist'),
   ROOT_LABEL: '全部文件',
   TARGET: 'tarot',
   BATCH_SIZE: 50,
   FOLDERS: ['img', 'assets', 'decks', 'decks/rws', 'decks/aquatic'],
+  LOGIN_WAIT_TIMEOUT_MS: 180_000,
 };
 
 const ts = () => new Date().toISOString().slice(11, 19);
@@ -99,14 +106,23 @@ async function loadPlaywright() {
 
 async function ensureBrowser() {
   const { chromium } = await loadPlaywright();
-  await mkdir(CONFIG.USER_DATA_DIR, { recursive: true });
+  await mkdir(CONFIG.CACHE_DIR, { recursive: true });
+
   const headless = process.env.HEADLESS === '1';
-  log(`启动 Chromium (headless=${headless})  userDataDir=${CONFIG.USER_DATA_DIR}`);
-  let ctx;
+  const fresh = process.env.FRESH_LOGIN === '1';
+  if (fresh && existsSync(CONFIG.STORAGE_STATE_FILE)) {
+    log('FRESH_LOGIN=1 → 删除旧 storage state，强制重新登录');
+    try {
+      unlinkSync(CONFIG.STORAGE_STATE_FILE);
+    } catch {}
+  }
+  const hasState = existsSync(CONFIG.STORAGE_STATE_FILE);
+  log(`启动 Chromium (headless=${headless})  storageState=${hasState ? '已加载' : '<空>'}`);
+
+  let browser;
   try {
-    ctx = await chromium.launchPersistentContext(CONFIG.USER_DATA_DIR, {
+    browser = await chromium.launch({
       headless,
-      viewport: { width: 1440, height: 900 },
       args: ['--disable-blink-features=AutomationControlled'],
     });
   } catch (e) {
@@ -116,23 +132,48 @@ async function ensureBrowser() {
     }
     throw e;
   }
-  const page = ctx.pages()[0] ?? (await ctx.newPage());
-  return { ctx, page };
+  const ctx = await browser.newContext({
+    viewport: { width: 1440, height: 900 },
+    storageState: hasState ? CONFIG.STORAGE_STATE_FILE : undefined,
+  });
+  const page = await ctx.newPage();
+  return { browser, ctx, page };
 }
 
-async function gotoConsole(page) {
+function looksLikeLoginPage(url) {
+  return /signin\.aliyun|account\.aliyun.*login|passport\.aliyun|sso/i.test(url);
+}
+
+async function persistStorageState(ctx) {
+  await mkdir(CONFIG.CACHE_DIR, { recursive: true });
+  await ctx.storageState({ path: CONFIG.STORAGE_STATE_FILE });
+  log(`💾 已保存登录态 → ${CONFIG.STORAGE_STATE_FILE}`);
+}
+
+async function gotoConsole(page, ctx) {
   if (!page.url().includes('platformService/serverless')) {
     log(`跳转到控制台 ${CONFIG.EMAS_URL}`);
     await page.goto(CONFIG.EMAS_URL, { waitUntil: 'domcontentloaded' });
   }
-  log('等待登录态... (若浏览器弹窗显示登录页，请在窗口中完成 Aliyun SSO 登录)');
-  for (let i = 0; i < 60; i++) {
-    if (page.url().includes('platformService/serverless')) break;
+
+  const deadline = Date.now() + CONFIG.LOGIN_WAIT_TIMEOUT_MS;
+  let promptedLogin = false;
+  while (Date.now() < deadline) {
+    const url = page.url();
+    if (url.includes('platformService/serverless')) break;
+    if (!promptedLogin && looksLikeLoginPage(url)) {
+      log('🔐 检测到 Aliyun 登录页，请在弹出的浏览器窗口中完成 SSO 登录...');
+      log('   （登录成功后脚本会自动继续，并将登录态写入 storage-state.json）');
+      promptedLogin = true;
+    }
     await page.waitForTimeout(2000);
   }
   if (!page.url().includes('platformService/serverless')) {
-    throw new Error('120s 内未检测到 EMAS 控制台页面，请手动登录后再次运行此脚本。');
+    throw new Error(
+      `${CONFIG.LOGIN_WAIT_TIMEOUT_MS / 1000}s 内未检测到 EMAS 控制台。请手动登录后重试，或加 FRESH_LOGIN=1 清缓存。`
+    );
   }
+
   await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(2000);
 
@@ -149,6 +190,8 @@ async function gotoConsole(page) {
     await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2500);
   }
+
+  await persistStorageState(ctx);
 }
 
 async function getEmasFrame(page) {
@@ -303,9 +346,9 @@ async function main() {
     return;
   }
 
-  const { ctx, page } = await ensureBrowser();
+  const { browser, ctx, page } = await ensureBrowser();
   try {
-    await gotoConsole(page);
+    await gotoConsole(page, ctx);
     const frame = await getEmasFrame(page);
 
     if (phase === 'folders' || phase === 'all') {
@@ -337,7 +380,8 @@ async function main() {
     if (process.env.KEEP_OPEN === '1') {
       log('KEEP_OPEN=1 → 浏览器保持打开');
     } else {
-      await ctx.close();
+      await ctx.close().catch(() => {});
+      await browser.close().catch(() => {});
     }
   }
 }
