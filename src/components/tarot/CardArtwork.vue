@@ -78,9 +78,9 @@ const isMinor = computed(
   border-radius: inherit;
   display: block;
   /* 牌图源（RWS / Aquatic）自带外侧黑边与底部标题文字带；
-     此处统一放大 1.2 倍，由父级 overflow:hidden 裁掉边缘，
+     此处统一放大 1.14 倍，由父级 overflow:hidden 裁掉边缘，
      使所有渲染卡牌的页面与设置页预览视觉保持一致。 */
-  transform: scale(1.2);
+  transform: scale(1.14);
   transform-origin: center;
 }
 .card-artwork-minor {
