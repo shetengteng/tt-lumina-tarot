@@ -228,12 +228,6 @@ async function exportJSON() {
           >
             {{ t('settings.cardArtImageHint') }}
           </p>
-          <p
-            v-if="cardArtTheme === 'aquatic'"
-            class="rounded-md border border-amber-500/30 bg-amber-500/10 p-sm text-[11px] leading-relaxed text-amber-700 dark:text-amber-400"
-          >
-            {{ t('settings.cardArtAquaticWarning') }}
-          </p>
         </CardContent>
       </Card>
 
