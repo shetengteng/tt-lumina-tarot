@@ -32,28 +32,20 @@ onMounted(async () => {
         </p>
       </div>
 
-      <div class="flex flex-col items-center gap-xs sm:items-end">
-        <div class="rounded-md bg-white p-xs shadow-sm">
-          <img
-            v-if="shareQrDataUrl"
-            :src="shareQrDataUrl"
-            alt=""
-            width="72"
-            height="72"
-            class="block h-[72px] w-[72px]"
-          />
-          <div
-            v-else
-            class="h-[72px] w-[72px] animate-pulse rounded-sm bg-muted"
-            aria-hidden="true"
-          />
-        </div>
-        <p
-          v-if="shareUrl"
-          class="break-all font-mono text-[10px] text-muted-foreground/70"
-        >
-          {{ shareUrl }}
-        </p>
+      <div class="rounded-md bg-white p-xs shadow-sm">
+        <img
+          v-if="shareQrDataUrl"
+          :src="shareQrDataUrl"
+          alt=""
+          width="72"
+          height="72"
+          class="block h-[72px] w-[72px]"
+        />
+        <div
+          v-else
+          class="h-[72px] w-[72px] animate-pulse rounded-sm bg-muted"
+          aria-hidden="true"
+        />
       </div>
     </div>
   </footer>

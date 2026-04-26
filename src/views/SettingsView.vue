@@ -373,10 +373,14 @@ onMounted(async () => {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent class="space-y-md p-lg">
-          <div class="space-y-xs">
-            <Label>{{ t('settings.aboutLabel') }}</Label>
+      <Card class="about-card overflow-hidden">
+        <CardContent class="relative space-y-lg p-lg">
+          <div aria-hidden="true" class="about-glow" />
+
+          <div class="space-y-sm">
+            <Label class="font-display text-sm tracking-[0.3em] text-foreground/90">
+              {{ t('settings.aboutLabel') }}
+            </Label>
             <p class="text-sm leading-relaxed text-muted-foreground">
               {{ t('settings.aboutLine1') }}
             </p>
@@ -385,35 +389,42 @@ onMounted(async () => {
             </p>
           </div>
 
-          <Separator />
+          <div
+            aria-hidden="true"
+            class="flex items-center justify-center gap-sm text-muted-foreground/40"
+          >
+            <span class="h-px flex-1 bg-border/60" />
+            <span class="text-[10px] tracking-[0.4em] text-primary/70">✦</span>
+            <span class="h-px flex-1 bg-border/60" />
+          </div>
 
           <div class="flex flex-col items-center gap-md sm:flex-row sm:items-center sm:gap-lg">
-            <div class="shrink-0 rounded-md bg-white p-sm shadow-sm">
+            <div class="shrink-0 rounded-md bg-white p-sm shadow-md ring-1 ring-border/40">
               <img
                 v-if="shareQrDataUrl"
                 :src="shareQrDataUrl"
                 alt=""
-                width="140"
-                height="140"
-                class="block h-[140px] w-[140px]"
+                width="132"
+                height="132"
+                class="block h-[132px] w-[132px]"
               />
               <div
                 v-else
-                class="h-[140px] w-[140px] animate-pulse rounded-sm bg-muted"
+                class="h-[132px] w-[132px] animate-pulse rounded-sm bg-muted"
                 aria-hidden="true"
               />
             </div>
             <div class="min-w-0 flex-1 space-y-xs text-center sm:text-left">
-              <p
-                v-if="shareUrl"
-                class="break-all font-mono text-xs text-foreground/80"
-              >
-                {{ shareUrl }}
+              <p class="font-display text-base tracking-[0.18em] text-foreground/90">
+                Lumina Tarot
+              </p>
+              <p class="text-[12px] leading-relaxed text-muted-foreground">
+                {{ t('home.shareFooterDesc') }}
               </p>
             </div>
           </div>
 
-          <p class="pt-xs text-[11px] uppercase tracking-[0.3em] text-muted-foreground/60">
+          <p class="pt-xs text-center text-[11px] uppercase tracking-[0.3em] text-muted-foreground/60">
             {{ t('settings.aboutMeta') }}
           </p>
         </CardContent>
@@ -421,3 +432,29 @@ onMounted(async () => {
     </div>
   </section>
 </template>
+
+<style scoped>
+.about-card {
+  background: linear-gradient(
+    180deg,
+    hsl(var(--card)) 0%,
+    hsl(var(--card) / 0.92) 100%
+  );
+}
+
+.about-glow {
+  position: absolute;
+  pointer-events: none;
+  inset: -40% -10% auto auto;
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(
+    circle at 50% 50%,
+    hsl(var(--primary) / 0.15) 0%,
+    hsl(var(--primary) / 0.05) 40%,
+    transparent 70%
+  );
+  filter: blur(20px);
+  z-index: 0;
+}
+</style>
