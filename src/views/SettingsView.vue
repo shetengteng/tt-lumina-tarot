@@ -374,49 +374,36 @@ onMounted(async () => {
       </Card>
 
       <Card>
-        <CardContent class="space-y-xs p-lg">
-          <Label>{{ t('settings.aboutLabel') }}</Label>
-          <p class="text-sm leading-relaxed text-muted-foreground">
-            {{ t('settings.aboutLine1') }}
-          </p>
-          <p class="text-sm leading-relaxed text-muted-foreground">
-            {{ t('settings.aboutLine2') }}
-          </p>
-          <p class="pt-xs text-[11px] uppercase tracking-[0.3em] text-muted-foreground/60">
-            {{ t('settings.aboutMeta') }}
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card>
         <CardContent class="space-y-md p-lg">
           <div class="space-y-xs">
-            <Label>{{ t('home.shareFooterTitle') }}</Label>
-            <p class="text-sm text-muted-foreground">
-              {{ t('home.shareFooterDesc') }}
+            <Label>{{ t('settings.aboutLabel') }}</Label>
+            <p class="text-sm leading-relaxed text-muted-foreground">
+              {{ t('settings.aboutLine1') }}
+            </p>
+            <p class="text-sm leading-relaxed text-muted-foreground">
+              {{ t('settings.aboutLine2') }}
             </p>
           </div>
+
           <Separator />
+
           <div class="flex flex-col items-center gap-md sm:flex-row sm:items-center sm:gap-lg">
             <div class="shrink-0 rounded-md bg-white p-sm shadow-sm">
               <img
                 v-if="shareQrDataUrl"
                 :src="shareQrDataUrl"
-                :alt="t('home.shareFooterTitle')"
-                width="160"
-                height="160"
-                class="block h-[160px] w-[160px]"
+                alt=""
+                width="140"
+                height="140"
+                class="block h-[140px] w-[140px]"
               />
               <div
                 v-else
-                class="h-[160px] w-[160px] animate-pulse rounded-sm bg-muted"
+                class="h-[140px] w-[140px] animate-pulse rounded-sm bg-muted"
                 aria-hidden="true"
               />
             </div>
             <div class="min-w-0 flex-1 space-y-xs text-center sm:text-left">
-              <p class="text-[11px] uppercase tracking-[0.3em] text-muted-foreground/60">
-                Lumina Tarot
-              </p>
               <p
                 v-if="shareUrl"
                 class="break-all font-mono text-xs text-foreground/80"
@@ -425,6 +412,10 @@ onMounted(async () => {
               </p>
             </div>
           </div>
+
+          <p class="pt-xs text-[11px] uppercase tracking-[0.3em] text-muted-foreground/60">
+            {{ t('settings.aboutMeta') }}
+          </p>
         </CardContent>
       </Card>
     </div>

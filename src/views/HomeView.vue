@@ -429,13 +429,13 @@ onBeforeUnmount(() => {
       </div>
     </article>
 
-    <!-- 站点分享二维码 · 小尺寸入口 -->
+    <!-- 站点分享二维码 · 小尺寸入口（无文案描述） -->
     <div class="mt-xl mb-lg flex flex-col items-center gap-xs text-[11px] text-muted-foreground/80">
       <div class="rounded-md bg-white p-xs shadow-sm">
         <img
           v-if="shareQrDataUrl"
           :src="shareQrDataUrl"
-          :alt="t('home.shareFooterTitle')"
+          alt=""
           width="84"
           height="84"
           class="block h-[84px] w-[84px]"
