@@ -4,6 +4,7 @@ import { useSettingsStore } from '@/stores/settings';
 import AppHeader from '@/components/layout/AppHeader.vue';
 import BottomNav from '@/components/layout/BottomNav.vue';
 import BackgroundHost from '@/components/layout/BackgroundHost.vue';
+import SiteFooter from '@/components/layout/SiteFooter.vue';
 import { storeToRefs } from 'pinia';
 
 const settings = useSettingsStore();
@@ -27,10 +28,7 @@ onMounted(() => {
       </router-view>
     </main>
 
-    <footer class="relative z-10 mt-2xl hidden border-t border-border/50 py-lg text-center text-xs text-muted-foreground md:block">
-      <p class="font-display tracking-widest">Lumina Tarot · 在黑暗中点亮内心微光</p>
-      <p class="mt-xs opacity-70">Offline-first · Vue 3 · Tailwind · shadcn-vue</p>
-    </footer>
+    <SiteFooter />
 
     <BottomNav />
   </div>
