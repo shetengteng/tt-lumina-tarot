@@ -55,6 +55,19 @@ function tick(now: number) {
 function startHold(e?: Event) {
   if (phase.value !== 'idle') return;
   e?.preventDefault();
+  // 锁定 pointer 到按下的元素：避免轻微抖动 / 离开元素 / hit-test 重算
+  // 触发 pointerleave / pointercancel，从而提前结束长按。
+  if (e && 'pointerId' in e) {
+    const pe = e as PointerEvent;
+    const target = pe.currentTarget as Element | null;
+    if (target && typeof target.setPointerCapture === 'function') {
+      try {
+        target.setPointerCapture(pe.pointerId);
+      } catch {
+        // 某些浏览器在已释放的 pointer 上调用会抛错，忽略即可
+      }
+    }
+  }
   phase.value = 'holding';
   holdStart = performance.now();
   rafId = requestAnimationFrame(tick);
@@ -157,10 +170,8 @@ const isShuffling = computed(
         :aria-pressed="phase === 'holding'"
         :aria-label="phase === 'idle' ? t('shuffle.holdAria') : t('shuffle.holdingAria')"
         class="relative flex h-[260px] w-[220px] cursor-pointer select-none items-center justify-center outline-none touch-none md:h-[320px] md:w-[240px]"
-        :class="phase !== 'idle' && 'pointer-events-none'"
         @pointerdown="startHold"
         @pointerup="cancelHold"
-        @pointerleave="cancelHold"
         @pointercancel="cancelHold"
         @contextmenu.prevent
         @keydown="onKeyDown"
@@ -201,7 +212,6 @@ const isShuffling = computed(
         :class="phase === 'idle' && !settings.reducedMotion && 'animate-pulse'"
         @pointerdown="startHold"
         @pointerup="cancelHold"
-        @pointerleave="cancelHold"
         @pointercancel="cancelHold"
         @contextmenu.prevent
         @keydown="onKeyDown"
