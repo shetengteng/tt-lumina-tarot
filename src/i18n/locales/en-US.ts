@@ -92,7 +92,7 @@ export default {
     stopAndDraw: 'Stop and draw →',
     holdAria: 'Press and hold for 3 seconds to shuffle',
     holdingAria: 'Shuffling',
-    hintIdle: 'Press and hold the deck or this circle for 3 seconds to shuffle',
+    hintIdle: 'Press and hold this circle for 3 seconds to shuffle',
     hintAlmost: 'Shuffle complete · drawing…',
     hintHolding: 'Stay focused, keep holding…',
     hintDrawing: 'The cards have heard your question…',

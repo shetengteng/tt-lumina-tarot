@@ -92,7 +92,7 @@ export default {
     stopAndDraw: '停下，开始抽牌 →',
     holdAria: '长按此处 3 秒开始洗牌',
     holdingAria: '正在洗牌',
-    hintIdle: '长按上方牌堆或此圆圈 3 秒开始洗牌',
+    hintIdle: '长按此圆圈 3 秒开始洗牌',
     hintAlmost: '洗牌完成 · 抽牌中…',
     hintHolding: '保持专注，继续按住…',
     hintDrawing: '牌灵已聆听你的问题…',
