@@ -2,42 +2,58 @@
 
 > 在黑暗中点亮内心微光 —— 一款**离线运行**的塔罗牌占卜 Web App，强调仪式感与沉浸体验。
 
-Vue 3 · Vite · TypeScript · Tailwind CSS · shadcn-vue · Pinia · Vue Router · VueUse Motion
+Vue 3 · Vite · TypeScript · Tailwind CSS · shadcn-vue · Pinia · Vue Router · vue-i18n · Dexie (IndexedDB) · Workbox PWA · VueUse Motion · GSAP · tsparticles · Three.js · Fuse.js
 
 ---
 
 ## 特性
 
-- **纯前端、离线可用**：数据只存于用户本地（localStorage + Web Crypto API）。
+- **纯前端、离线可用**：可作为 PWA 安装；用户数据全部留在本机（IndexedDB via Dexie + localStorage 偏好）。
+- **完整 78 张塔罗牌**：22 张大阿卡那 + 56 张小阿卡那（权杖 / 圣杯 / 宝剑 / 钱币）。
+- **双语界面**：简体中文 / English，可在设置中实时切换；卡牌文案、关键词与解读均含双语。
 - **三套可切换主题**：`神秘暗黑` / `现代极简` / `疗愈自然`，通过 shadcn-vue HSL 变量 + View Transitions 平滑切换。
-- **移动优先**：核心流程均有移动端友好布局，触控目标 ≥ 44×44pt。
-- **完整占卜闭环**：选牌阵 → 输入问题 → 洗牌 → 翻牌 → 解读 → 保存历史。
-- **大阿卡那图鉴**：22 张卡牌的关键词、正/逆位、情感/事业/建议。
-- **数据可导出**：JSON 格式一键备份。
+- **三种卡面风格**：站内 SVG 极简版 / 经典韦特（Rider–Waite–Smith）/ 水彩重绘（Aquatic Tarot），可自由切换。
+- **五种牌背图案 + 两种小阿卡那插画风格**：卡面为「极简」时可自由组合，兼顾仪式感与清爽。
+- **三档动画强度**：`关闭 / 轻量 / 完整`，覆盖粒子背景、洗牌动画与界面过渡，适配低端机与晕动症用户。
+- **完整占卜闭环**：选牌阵 → 输入问题 → 长按洗牌 → 翻牌 → AI 风格解读 → 保存历史。
+- **首页今日仪式**：`今日一牌` 即点即翻 + 三大领域（事业 / 情感 / 自我）日运牌，每日一组、缓存到当地。
+- **图鉴 & 历史**：78 张牌可全文搜索（牌名 / 英文 / 关键词 / 花色）；历史 100 条本地保留，支持 JSON 导出与分享。
+- **移动优先**：核心流程均有移动端友好布局，触控目标 ≥ 44×44pt；通过 Lighthouse 移动端基线。
 
 ## 项目结构
 
 ```
 tt-lumina-tarot/
-├── design/                        # 设计文档
+├── design/                        # 设计与可行性文档（按日期归档）
 │   ├── 2026-04-24-01-可行性分析.md
 │   ├── 2026-04-24-02-系统设计.md
 │   ├── 2026-04-24-03-原型设计.md
-│   ├── 2026-04-24-05-实施清单-98%.md  # MVP 完工清单（文件名带进度，按全文 [x]/[ ] 自动统计）
+│   ├── 2026-04-24-05-实施清单-98%.md   # MVP 完工清单（文件名带进度，按全文 [x]/[ ] 自动统计）
+│   ├── 2026-04-25-01-tarot-prompts.md  # 卡牌文案 / AI 解读 prompt
 │   ├── html/                      # 可交互 HTML 原型
-│   │   └── 2026-04-24-04-原型.html
 │   └── themes/                    # 纯 CSS 变量路径（备选参考）
 ├── public/                        # 静态资源
+│   └── decks/                     # 卡面图源（rws / aquatic）+ 牌背
+├── raw-assets/                    # 本地 AI→SVG 中间产物（不入库，见 .gitignore）
+├── release/                       # 本地发布/备份归档（不入库，见 .gitignore）
+├── scripts/                       # 一次性工具脚本
+│   ├── download-decks.mjs         # 拉取并归一化卡面资源
+│   ├── generate-pwa-icons.mjs     # 生成 PWA 图标
+│   ├── verify-pwa.mjs             # 校验 manifest / SW / 图标
+│   └── make-{rws,aquatic}-back.mjs# 生成对应主题牌背
 ├── src/
 │   ├── assets/css/                # base.css + themes.css（HSL token）
 │   ├── components/
 │   │   ├── ui/                    # shadcn-vue 组件（button/card/input/…）
-│   │   ├── layout/                # AppHeader / BackgroundHost / ThemePicker
-│   │   └── tarot/                 # TarotCard
-│   ├── data/                      # 22 张大阿卡那 + 4 种牌阵 + 心情
-│   ├── lib/                       # utils / tarot（抽牌算法）
+│   │   ├── layout/                # AppHeader / BackgroundHost / ThemePicker / BottomNav
+│   │   └── tarot/                 # TarotCard / CardArtwork / CardBackPattern / MinorIllustration
+│   ├── composables/               # useCardI18n / useTarotI18n / useShare / ...
+│   ├── data/                      # 78 张牌定义 + 牌阵 + 心情
+│   ├── i18n/                      # vue-i18n 入口
+│   │   └── locales/               # en-US / zh-CN（通用）+ cards/（牌文案）
+│   ├── lib/                       # utils / db (Dexie) / tarot（抽牌算法）/ share
 │   ├── router/                    # Hash 路由
-│   ├── stores/                    # settings / reading
+│   ├── stores/                    # settings / reading（Pinia）
 │   ├── types/
 │   ├── views/                     # Home / Spread / Question / Shuffle / Reveal / Reading / Library / CardDetail / History / Settings
 │   ├── App.vue
@@ -45,7 +61,7 @@ tt-lumina-tarot/
 ├── index.html
 ├── tailwind.config.ts             # 自定义 spacing（xs/sm/md/lg/xl/2xl）+ HSL 变量
 ├── components.json                # shadcn-vue 配置
-├── vite.config.ts
+├── vite.config.ts                 # 含 vite-plugin-pwa（Workbox）
 ├── tsconfig.json / tsconfig.app.json / tsconfig.node.json
 └── package.json
 ```
@@ -92,27 +108,53 @@ spacing: {
 | 命令 | 说明 |
 |-|-|
 | `pnpm dev` | 启动 Vite 开发服务器 |
-| `pnpm build` | `vue-tsc --build` + `vite build` |
-| `pnpm preview` | 预览生产构建 |
+| `pnpm build` | `vue-tsc -b` + `vite build`（含 Workbox PWA 产物） |
+| `pnpm preview` | 预览生产构建（含 Service Worker） |
 | `pnpm type-check` | 仅类型检查 |
+| `pnpm icons:gen` | 生成 PWA 各尺寸图标 |
+| `pnpm verify:pwa` | 校验 manifest / SW / 图标完整性 |
+| `pnpm decks:download` | 下载并归一化卡面资源到 `public/decks/` |
 
-## MVP 范围
+## 已实装范围
 
-当前 MVP 含：
-- 22 张大阿卡那（Major Arcana）
-- 4 种牌阵：`单张指引` / `三牌时间线` / `十字牌阵` / `凯尔特精简`
-- 3 套主题 + View Transitions
-- CSS 原生过渡动画（未引入 GSAP / tsparticles / Three.js）
-- localStorage 持久化（设置 + 占卜历史，最多 100 条）
+当前版本（v0.1）已包含：
+
+- **完整牌库**：78 张（22 大阿 + 56 小阿），大阿/小阿都含双语关键词与正/逆位的核心 / 情感 / 事业 / 建议四字段。
+- **牌阵**：`单张指引` / `三牌时间线` / `十字牌阵` / `凯尔特精简` 等。
+- **占卜流程**：选牌阵 → 输入问题 → 长按洗牌（`pointer capture` 抗抖动）→ 翻牌 → 解读 → 写入历史。
+- **首页 Daily**：`今日一牌` 即点即翻；事业 / 情感 / 自我三领域日运卡每日生成并缓存到本地。
+- **图鉴**：78 张牌全文搜索（牌名 / 英文 / 关键词 / 花色），单卡详情含正/逆位四字段双语版。
+- **历史**：100 条本地存储，可分享、可 JSON 导出、可清空。
+- **主题与外观**：3 套色彩主题 × 3 套卡面 × 5 种牌背 × 2 种小阿插画 × 3 档动画级别，组合出从极简到沉浸的视觉光谱；切换走 View Transitions。
+- **持久化**：偏好走 `localStorage`、占卜历史与 daily draw 走 IndexedDB（Dexie）。
+- **离线**：通过 `vite-plugin-pwa` + Workbox 注册 Service Worker，可作为 PWA 安装并离线运行。
 
 后续迭代方向参见 `design/2026-04-24-01-可行性分析.md` § 迭代路径。
 
 ## 致谢
 
-- [shadcn-vue](https://www.shadcn-vue.com/)
-- [radix-vue](https://www.radix-vue.com/)
-- [VueUse](https://vueuse.org/)
+**框架与开源工具**
+
+- [shadcn-vue](https://www.shadcn-vue.com/) · [radix-vue](https://www.radix-vue.com/)
+- [VueUse](https://vueuse.org/) · [@vueuse/motion](https://motion.vueuse.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
+- [Dexie.js](https://dexie.org/) · [Fuse.js](https://www.fusejs.io/)
+- [Vite PWA Plugin](https://vite-pwa-org.netlify.app/) · [Workbox](https://developer.chrome.com/docs/workbox/)
+- [GSAP](https://gsap.com/) · [tsparticles](https://particles.js.org/) · [three.js](https://threejs.org/)
+
+**牌面资源**
+
+- **经典韦特（Rider–Waite–Smith）**：原作 Pamela Colman Smith / Arthur Edward Waite，1909 年出版，**已进入公有领域（Public Domain）**。
+- **水彩重绘（Aquatic Tarot）**：由 [Andreas Schröter](https://www.aquatictarot.de/) 创作，授权为 [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/)。**仅限个人非商业用途**；如需商业使用，请改用「极简」或「经典韦特」主题，并直接联系原作者。
+- **极简卡面**：本项目内置 SVG，与本仓库同许可。
+
+## License
+
+本仓库源代码采用 MIT License；详见 `LICENSE`（如有）。
+
+牌面图源遵循各自上游协议：
+- `public/decks/rws/*` — Public Domain
+- `public/decks/aquatic/*` — © Andreas Schröter, CC BY-NC-SA 3.0（仅限个人非商业使用）
 
 ---
 
