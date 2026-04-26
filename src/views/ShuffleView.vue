@@ -142,7 +142,7 @@ const isShuffling = computed(
 
     <div
       v-if="readingStore.current?.question"
-      class="mx-auto mb-xl max-w-xl rounded-md border border-border/60 bg-muted/40 p-md text-center text-sm text-muted-foreground"
+      class="relative z-0 mx-auto mb-xl max-w-xl rounded-md border border-border/60 bg-muted/40 p-md text-center text-sm text-muted-foreground"
     >
       <span class="text-primary">「</span>
       {{ readingStore.current.question }}
@@ -150,7 +150,7 @@ const isShuffling = computed(
     </div>
 
     <!-- 长按触控区：牌堆扇形 -->
-    <div class="relative z-0 mb-xl flex justify-center overflow-hidden">
+    <div class="shuffle-stack-wrap relative z-20 mb-xl flex justify-center py-2xl">
       <div
         role="button"
         tabindex="0"

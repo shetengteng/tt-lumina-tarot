@@ -15,7 +15,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="relative min-h-dvh overflow-x-hidden bg-background text-foreground">
+  <div class="relative min-h-dvh bg-background text-foreground">
     <BackgroundHost />
     <AppHeader />
 
